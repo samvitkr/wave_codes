@@ -117,19 +117,19 @@ load(fng)
 
 t=tiledlayout(3,1);
 nexttile
-pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(JAnl(:,1,:)));
+pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-JAnl(:,1,:)));
 shading flat
 axis equal
 xlim([0 2*pi])
 ylim([-0.1 1])
 ylabel('z/H')
 cu=colorbar;
-ylabel(cu,'$u_{\phi}\cdot(u\times\omega)$','Interpreter','latex','FontSize',12)
+ylabel(cu,'$-u_{\phi}\cdot(u\times\omega)$','Interpreter','latex','FontSize',12)
  %clim([-3 3])
 clim([-cnl cnl])
 
 nexttile
-pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(JAvisc(:,1,:)));
+pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-JAvisc(:,1,:)));
 shading flat
 axis equal
 xlim([0 2*pi])
@@ -138,11 +138,11 @@ ylabel('z/H')
 %clim([-30 30])
 clim([-cv cv])
 cw=colorbar;
-ylabel(cw,'$u_{\phi}\cdot(\nu \Delta u)$','Interpreter','latex','FontSize',12)
+ylabel(cw,'$-u_{\phi}\cdot(\nu \Delta u)$','Interpreter','latex','FontSize',12)
 
 JA=JAvisc+JAnl;
 nexttile
-pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(JA(:,1,:)));
+pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-JA(:,1,:)));
 shading flat
 axis equal
 xlim([0 2*pi])
@@ -151,7 +151,7 @@ ylabel('z/H')
 co=colorbar;
 clim([-cnl cnl])
 %clim([-30 30])
-ylabel(co,'$u_{\phi}\cdot(u\times\omega+\nu\Delta u)$','Interpreter','latex','FontSize',12)
+ylabel(co,'$-u_{\phi}\cdot(u\times\omega+\nu\Delta u)$','Interpreter','latex','FontSize',12)
 xlabel('x/H')
 sgtitle(sgt)
 colormap jet
@@ -160,10 +160,14 @@ colormap jet
  clf
 end
 %%
-close all
+% close all
  vol=2*pi;
-load("JAseries.mat")
-load("../wave_c_2/flowrate.mat")
+fla=fullfile(baseDir,'JAseries.mat')
+load(fla)
+% load("JAseries.mat")
+fj=fullfile(baseDir,'flowrate.mat')
+load(fj)
+% load("../wave_c_2/flowrate.mat")
 subplot(1,2,1)
 hold on
 plot(t,Tnls./vol,'--b','LineWidth',1.5)

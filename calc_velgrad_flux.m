@@ -2,8 +2,9 @@
 clear
 close all
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
-baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
+baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
 
 %load('grid.mat')
 tic
@@ -11,15 +12,15 @@ ret=180;
 %ret=10;
 nu=1/ret;
 tstart=20200000;
-step=200000;
-tend=32000000;
+step=    200000;
+tend=  32000000;
 
 for tstep=tstart:step:tend
     % fn=		sprintf('DAT000%03d99999999',tstep)
     % fnmat= sprintf('gradflux000%03d99999999.mat',tstep)
-    %fng = sprintf('grid%014d.mat',tstep);
-    %fng=fullfile(baseDir,fng);
-    fng=fullfile(baseDir,'grid.mat')
+    fng = sprintf('grid%014d.mat',tstep);
+    fng=fullfile(baseDir,fng);
+    %fng=fullfile(baseDir,'grid.mat')
     load(fng);
     fn=sprintf('Sol%014d.h5',tstep);
     fnmat=sprintf('gradflux%014d.mat',tstep);

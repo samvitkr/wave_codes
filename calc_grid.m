@@ -1,21 +1,26 @@
 %% Read timestep 10 from OCF data and save into a .mat file
 clear
 close all
-baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
+
 
 tstart=20200000;
-step  =20200000;
-tend  =20200000;
-figure
-hold on
-for tstep=tstart:tstart...step:tend
+step  =200000;
+tend  =32000000;
+
+%figure
+%hold on
+
+for tstep=tstart:step:tend
 % fn=sprintf('DAT000%03d99999999',tstep)
 fn=sprintf('Sol%014d.h5',tstep)
 fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
 % info=h5info(fname)
 fnmat = sprintf('grid%014d.mat',tstep);
-%fng = fullfile(baseDir,fnmat);
-fng=fullfile(baseDir,'grid.mat')
+fng = fullfile(baseDir,fnmat);
+
+%fng=fullfile(baseDir,'grid.mat')
 fprintf('Reading %s\n', fname);
 
 % %     % --- Read datasets (no leading slash) ---

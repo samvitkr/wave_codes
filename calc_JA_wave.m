@@ -3,7 +3,8 @@ close all
 % baseDir = fullfile('/projects', 'standard', 'shenl','naras062','JA-Samvit','Retau-10','RUN-c0');
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
 
 %load('grid.mat')
 tic
@@ -26,8 +27,8 @@ Ny=16;
 Nz=128;
 %uphi=reshape(uphi,Nx,1,Nz);
 %wphi=reshape(wphi,Nx,1,Nz);
-%c=2;
-c=0;
+c=2;
+%c=0;
 for tstep=tstart:step:tend
     % fn=		sprintf('DAT000%03d99999999',tstep)
     % fnmat= sprintf('gradflux000%03d99999999.mat',tstep)
@@ -36,12 +37,12 @@ for tstep=tstart:step:tend
     fnmat=sprintf('gradflux%014d.mat',tstep);
     fname = fullfile(baseDir,fn);
     fnamemat=fullfile(baseDir,fnmat);
-    %fnmat = sprintf('grid%014d.mat',tstep);
-    %fng = fullfile(baseDir,fnmat);
-    fng=fullfile(baseDir,'grid.mat');
+    fnmat = sprintf('grid%014d.mat',tstep);
+    fng = fullfile(baseDir,fnmat);
+    %fng=fullfile(baseDir,'grid.mat');
     load(fng);
-    %fnp=sprintf('potvel%014d.mat',tstep);
-fnp=sprintf('potvel.mat');
+    fnp=sprintf('potvel%014d.mat',tstep);
+%fnp=sprintf('potvel.mat');
     fnp=fullfile(baseDir,fnp);
 fnja = sprintf('jafields%014d.mat',tstep)
 fnja = fullfile(baseDir,fnja);
@@ -50,7 +51,6 @@ load(fnp)
     fprintf('Reading %s\n', fname);
     u    = h5read(fname, '/u');
     v    = h5read(fname, '/v');
-    w    = h5read(fname, '/w');
     time = h5read(fname, '/time')
     zz   = h5read(fname, '/zz');
     pey = h5read(fname,'/pey');

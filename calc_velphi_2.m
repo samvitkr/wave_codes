@@ -2,28 +2,27 @@ clear
 close all
 load('potexact.mat')
 %load('../wave_c_2/grid.mat')
-%baseDir = '/users/1/kuma0458/wave/wave_c_2_ret180';
-baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
+%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 
-%cwave=2;
+cwave=2;
 %load('grid.mat')
-cwave=0;
+%cwave=0;
 tic
-ret=10;
-nu=1/ret;
+
 %tstep=9000000;
 tstart=20200000;
 step=200000;
-tend=20200000;
+tend=32000000;
 for tstep=tstart:step:tend
-%fng = sprintf('grid%014d.mat',tstep);
-fng=sprintf('grid.mat');
+fng = sprintf('grid%014d.mat',tstep);
+% fng=sprintf('grid.mat');
 fng=fullfile(baseDir,fng);
    load(fng);
 fn=sprintf('Sol%014d.h5',tstep)
 fname = fullfile(baseDir,fn);
-%fnp=sprintf('potvel%014d.mat',tstep);
-fnp='potvel.mat';
+fnp=sprintf('potvel%014d.mat',tstep);
+%fnp='potvel.mat';
 fnp=fullfile(baseDir,fnp);
 zz   = h5read(fname, '/zz');
     zw = h5read(fname,'/zw');

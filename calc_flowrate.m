@@ -4,9 +4,9 @@ clear
 %baseDir = fullfile('/projects', 'standard', 'shenl','naras062','JA-Samvit','Retau-10','RUN-c0');
 %   datadir=fullfile(getenv('MSIPROJECT'),'shared','kuma0458','open_channel_flow_180','data');
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
-% baseDir = '/users/1/kuma0458/wave/wave_c_2_ret180';
+baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
 
-baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 
 
 tstart=20200000;
@@ -16,8 +16,8 @@ c=2;
 t=[];
 flowrate=[];
 for tstep=tstart:step:tend
-       % fng = sprintf('grid%014d.mat',tstep);
-    fng='grid.mat';
+        fng = sprintf('grid%014d.mat',tstep);
+    %fng='grid.mat';
        fng = fullfile(baseDir,fng)
     load(fng);
     fn=sprintf('Sol%014d.h5',tstep);
@@ -82,4 +82,4 @@ fj=fullfile(baseDir,'flowrate.mat');
 save(fj,'t','flowrate','Jdot')
 %%
 
-plot(t,Jdot,'o-')
+plot(t,flowrate,'o-')
