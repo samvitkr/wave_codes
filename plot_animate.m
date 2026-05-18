@@ -3,12 +3,12 @@ clear
 close all
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
 
 x1=10;
 y1=10;
-width=1096;
-height=582;
+width=1100;
+height=600;
 tstart=20200000;
 step=200000;
 tend=32000000;
@@ -25,8 +25,8 @@ for tstep=tstart:step:tend
 fn=sprintf('Sol%014d.h5',tstep)
 fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
 % info=h5info(fname)
-%fnmat = sprintf('grid%014d.mat',tstep);
-fnmat='grid.mat';
+fnmat = sprintf('grid%014d.mat',tstep);
+%fnmat='grid.mat';
 fng = fullfile(baseDir,fnmat);
 
 fnmat=sprintf('gradflux%014d.mat',tstep);
@@ -101,8 +101,8 @@ for tstep=tstart:step:tend
 fn=sprintf('Sol%014d.h5',tstep)
 fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
 % info=h5info(fname)
-%fnmat = sprintf('grid%014d.mat',tstep);
-fnmat='grid.mat';
+fnmat = sprintf('grid%014d.mat',tstep);
+%fnmat='grid.mat';
 fng = fullfile(baseDir,fnmat);
 
 fnmat=sprintf('jafields%014d.mat',tstep);
