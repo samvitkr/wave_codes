@@ -6,6 +6,15 @@ tstart=3025000000;
 step  =   5000000;
 tend  =3820000000;
 load(fullfile(baseDir,'grid.mat'))
+
+fn    = 'grid.h5';
+fname = fullfile(baseDir,fn);
+zz   = h5read(fname, '/zz');
+zw   = h5read(fname, '/zw');
+pex  = h5read(fname, '/pex');
+pey = h5read(fname, '/pey');
+
+
 dzw =diff(zw)';
 Jacobian=1./dZetadz;
 c=2;
@@ -27,15 +36,17 @@ for tstep=tstart:step:tend
     u    = h5read(fname, '/u');
     time = h5read(fname, '/time');
     ct=c*time;
+
     kd = exp((1i*ct).*kx);
     kdis = reshape(kd,[Nx,1,1]);
     u = ifft( (fft(u,[],1).*kdis),[],1,'symmetric');
+
     uslice = squeeze(dy.*sum(u,2));
     udz=sum(uslice(:,2:end).*dzw,2);
     Jx=udz.*Jacobian;
     J=mean(Jx);
-     t=[t;time];
-     flowrate = [flowrate;J];
+    t=[t;time];
+    flowrate = [flowrate;J];
 end
 
 %%

@@ -9,22 +9,25 @@ tic
 %ret=10;
 ret=180;
 nu=1/ret;
-pex=0.5;
 baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-
 Nx=256;
 Ny=192;
 Nz=128;
-
-fj=fullfile(baseDir,'flowrate.mat')
-load(fj);
+fname = fullfile(baseDir,'grid.h5');
+zz   = h5read(fname, '/zz');
+zw   = h5read(fname, '/zw');
+pex  = h5read(fname, '/pex');
+pey = h5read(fname, '/pey');
+Ly=2*pi/pey;
+Lx=2*pi/pex;
+kx=pex*[0:Nx/2-1,-Nx/2:-1]';
+load(fullfile(baseDir,'flowrate.mat'))
 load(fullfile(baseDir,'grid.mat'))
 load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi')
 
 fup=fft(uphi,[],1);
 fwp=fft(wphi,[],1);
 clear uphi wphi
-%load('grid.mat')
 
 Ts = Jdot.*0;
 phidots=Jdot.*0;
@@ -32,107 +35,79 @@ Tnls=Ts;
 Tviscs=Ts;
 check=Jdot.*0;
 c=2;
-kx=pex*[0:Nx/2,-Nx/2+1:-1]';
-
-%c=0;
 for tstep=tstart:step:tend
-    % fn=		sprintf('DAT000%03d99999999',tstep)
-    % fnmat= sprintf('gradflux000%03d99999999.mat',tstep)
-
-    fn=sprintf('Sol%014d.h5',tstep);
-    fnmat=sprintf('gradflux%014d.mat',tstep);
-    fname = fullfile(baseDir,fn);
-    fnamemat=fullfile(baseDir,fnmat);
-    fnmat = sprintf('grid%014d.mat',tstep);
-    fng = fullfile(baseDir,fnmat);
-    %fng=fullfile(baseDir,'grid.mat');
-    load(fng);
-%    fnp=sprintf('potvel%014d.mat',tstep);
-%fnp=sprintf('potvel.mat');
-%    fnp=fullfile(baseDir,fnp);
-fnja = sprintf('jafields%014d.mat',tstep)
-fnja = fullfile(baseDir,fnja);
-%load(fnp)
-    % info=h5info(fname)
-    fprintf('Reading %s\n', fname);
-    u    = h5read(fname, '/u');
-    v    = h5read(fname, '/v');
-    time = h5read(fname, '/time')
-    zz   = h5read(fname, '/zz');
-    pey = h5read(fname,'/pey');
-    pex = h5read(fname,'/pex');
-    zz=zz';
-    Ly=2*pi/pey;
-    Lx=2*pi/pex;
-
+	fn=sprintf('Sol%014d.h5',tstep);
+	fname = fullfile(baseDir,fn);
+	fnmat=sprintf('gradflux%014d.mat',tstep);
+	load(fullfile(baseDir,fnmat));
+	fngn = sprintf('grid%014d.mat',tstep);
+	load(fullfile(baseDir,fngn));
+	
+	%fnp=sprintf('potvel%014d.mat',tstep);
+	%fnp=sprintf('potvel.mat');
+	%fnp=fullfile(baseDir,fnp);
+	fnja = sprintf('jafields%014d.mat',tstep)
+	fnja = fullfile(baseDir,fnja);
+	%load(fnp)
+	% info=h5info(fname)
+	fprintf('Reading %s\n', fname);
+	u    = h5read(fname, '/u');
+	v    = h5read(fname, '/v');
+	time = h5read(fname, '/time')
 	ct=c*time;
-        kd = exp((-1i*ct).*kx);
-        kdis = reshape(kd,[Nx,1,1]);
+	
+	kd = exp((-1i*ct).*kx);
+	kdis = reshape(kd,[Nx,1,1]);
 	uphis=ifft( (fup.*kdis),[],1,'symmetric');
 	wphis=ifft( (fwp.*kdis),[],1,'symmetric');
-
-    load(fnamemat)
-    
-    % xshift = c*time;
-    % dx =X(3,1,1)-X(2,1,1);
-    % ishift=round(xshift/dx);
-    % uphis=circshift(uphi,ishift,1);
-    % wphis=circshift(wphi,ishift,1);
-
-    ox = dwdy-dvdz;
-    oy = dudz-dwdx;
-    oz = dvdx-dudy;
-%[val id] = max(Z(:,1,1));
-%xmax = X(id,1,1)
-    % bot = 0.1*cos(2*(X(:,1,1)-c*time));
-    % botshift = circshift(bot,-ishift,1);
-
-         voz = single(v.*oz);
-         woy = single(wc.*oy);
-         uoy = single((u-c).*oy);
-         vox = single(v.*ox);
-         JAx = uphis.*(voz-woy+viscu);
-         JAz = wphis.*(uoy-vox+viscw);
-         JAnl = uphis.*(voz-woy)+wphis.*(uoy-vox);
-         JAvisc = uphis.*viscu + wphis.*viscw;
-
-clear u v w ox oy oz viscu viscw dwdy dvdz dudz dwdx dvdx dudy
-
-        vol=JAx.*0+1;
-        %%
-        JAin=JAx+JAz;
-JAnl(isnan(JAnl))=0;
-JAvisc(isnan(JAvisc))=0;
-JAtot = JAnl+JAvisc;
-save(fnja,'JAnl','JAvisc');
-
-    JAin(isnan(JAin))=0;
-    JAin=squeeze(mean(JAin,2));
-    JAin=trapz(zz',JAin,2);
-
-    JAnlin = squeeze(mean(JAnl,2));
-    JAviscin=squeeze(mean(JAvisc,2));
-    JAnlin=trapz(zz',JAnlin,2);
-    JAviscin=trapz(zz',JAviscin,2);
-
-
-    Jacobian=1./dZetadz;
-    T = -trapz(X(:,1,1),Jacobian.*JAin);
-    Tnl = -trapz(X(:,1,1),Jacobian.*JAnlin);
-    Tvisc = -trapz(X(:,1,1),Jacobian.*JAviscin);
-
-   
-    vol = trapz(X(:,1,1),Jacobian);
-     it = find(t ==time)
-   
- phidot = (Jdot(it))*Lx/Ly;
-Ts(it)=T;
-Tnls(it)=Tnl;
-Tviscs(it)=Tvisc;
-phidots(it)=phidot;
-
-
-check(it)=100*((T+phidot)/vol);
+	
+	ox = dwdy-dvdz;
+	oy = dudz-dwdx;
+	oz = dvdx-dudy;
+	
+	voz = single(v.*oz);
+	woy = single(wc.*oy);
+	uoy = single((u-c).*oy);
+	vox = single(v.*ox);
+	JAx = uphis.*(voz-woy+viscu);
+	JAz = wphis.*(uoy-vox+viscw);
+	JAnl = uphis.*(voz-woy)+wphis.*(uoy-vox);
+	JAvisc = uphis.*viscu + wphis.*viscw;
+	
+	clear u v w ox oy oz viscu viscw dwdy dvdz dudz dwdx dvdx dudy
+	
+	vol=JAx.*0+1;
+	%%
+	JAin=JAx+JAz;
+	JAnl(isnan(JAnl))=0;
+	JAvisc(isnan(JAvisc))=0;
+	JAtot = JAnl+JAvisc;
+	save(fnja,'JAnl','JAvisc');
+	
+	JAin(isnan(JAin))=0;
+	JAin=squeeze(mean(JAin,2));
+	JAin=trapz(zz,JAin,2);
+	
+	JAnlin = squeeze(mean(JAnl,2));
+	JAviscin=squeeze(mean(JAvisc,2));
+	JAnlin=trapz(zz,JAnlin,2);
+	JAviscin=trapz(zz,JAviscin,2);
+	
+	
+	Jacobian=1./dZetadz;
+	T = -trapz(X(:,1,1),Jacobian.*JAin);
+	Tnl = -trapz(X(:,1,1),Jacobian.*JAnlin);
+	Tvisc = -trapz(X(:,1,1),Jacobian.*JAviscin);
+	
+	
+	vol = trapz(X(:,1,1),Jacobian);
+	it = find(t ==time)
+	phidot = (Jdot(it))*Lx/Ly;
+	Ts(it)=T;
+	Tnls(it)=Tnl;
+	Tviscs(it)=Tvisc;
+	phidots(it)=phidot;
+	check(it)=100*((T+phidot)/vol);
 end
 %%
 mja=fullfile(baseDir,'JAseries.mat')
@@ -146,7 +121,7 @@ subplot(3,1,1)
 pcolor(squeeze(X(:,3,:)),squeeze(Z(:,3,:)),squeeze(-JAnl(:,3,:)))
 shading interp
 c=colorbar
- clim([-cl cl])
+clim([-cl cl])
 axis equal
 xlim([0 2*pi])
 ylim([-0.1 1])

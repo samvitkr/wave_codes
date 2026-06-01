@@ -59,41 +59,40 @@ tstart=3025000000;
 step  =   5000000;
 tend  =3820000000;
 for tstep=tstart:step:tend
-fn=sprintf('Sol%014d.h5',tstep)
-fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
-fnmat = sprintf('grid%014d.mat',tstep);
-fng = fullfile(baseDir,fnmat);
-%fng=fullfile(baseDir,'grid.mat')
-fprintf('Reading %s\n', fname);
-eta = h5read(fname, '/eta');
-
-%% wave numbers and fft
-etaz=eta(:,1);
-%plot(etaz)
-feta = fft(etaz);
-detadx = ifft( feta.*(1i.*kx),'symmetric' );
-
-[Zeta Eta] = meshgrid(zz,etaz);
-[Zetaw Eta] = meshgrid(zw,etaz);
-
-dZetadx = (Zeta-1).*( detadx./(1-etaz) );
-dZetadx = reshape( dZetadx,[Nx 1 Nz] );
-dZetadz = 1./(1-etaz);
-
-zg = Eta+Zeta.*(1-Eta);
-zgw = Eta+Zetaw.*(1-Eta);
-
-Z=single(zeros(Nx,Ny,Nz));
-Zw = single(zeros(Nx,Ny,Nz));
-
-for i =1:Nx
-    for j =1:Ny
-        for k=1:Nz
-            Z(i,j,k)=zg(i,k);
-            Zw(i,j,k)=zgw(i,k);
-        end
-    end
-end
-%save('grid.mat','X','Y','Z','Zw','dZetadz','dZetadx')
-save(fng,'Z','Zw','dZetadz','dZetadx')
+	fn=sprintf('Sol%014d.h5',tstep)
+	fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
+	fnmat = sprintf('grid%014d.mat',tstep);
+	fng = fullfile(baseDir,fnmat);
+	fprintf('Reading %s\n', fname);
+	eta = h5read(fname, '/eta');
+	
+	%% wave numbers and fft
+	etaz=eta(:,1);
+	%plot(etaz)
+	feta = fft(etaz);
+	detadx = ifft( feta.*(1i.*kx),'symmetric' );
+	
+	[Zeta Eta] = meshgrid(zz,etaz);
+	[Zetaw Eta] = meshgrid(zw,etaz);
+	
+	dZetadx = (Zeta-1).*( detadx./(1-etaz) );
+	dZetadx = reshape( dZetadx,[Nx 1 Nz] );
+	dZetadz = 1./(1-etaz);
+	
+	zg = Eta+Zeta.*(1-Eta);
+	zgw = Eta+Zetaw.*(1-Eta);
+	
+	Z=single(zeros(Nx,Ny,Nz));
+	Zw = single(zeros(Nx,Ny,Nz));
+	
+	for i =1:Nx
+	    for j =1:Ny
+	        for k=1:Nz
+	            Z(i,j,k)=zg(i,k);
+	            Zw(i,j,k)=zgw(i,k);
+	        end
+	    end
+	end
+	%save('grid.mat','X','Y','Z','Zw','dZetadz','dZetadx')
+	save(fng,'Z','Zw','dZetadz','dZetadx')
 end
