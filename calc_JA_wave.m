@@ -5,29 +5,35 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
-
-%load('grid.mat')
 tic
 %ret=10;
 ret=180;
 nu=1/ret;
-tstart=20200000;
-step=  200000;
-tend=  32000000;
-% ff=fullfile(baseDir,'phi.mat');
+pex=0.5;
+baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+
+Nx=256;
+Ny=192;
+Nz=128;
+
 fj=fullfile(baseDir,'flowrate.mat')
 load(fj);
+load(fullfile(baseDir,'grid.mat'))
+load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi')
+
+fup=fft(uphi,[],1);
+fwp=fft(wphi,[],1);
+clear uphi wphi
+%load('grid.mat')
+
 Ts = Jdot.*0;
 phidots=Jdot.*0;
 Tnls=Ts;
 Tviscs=Ts;
 check=Jdot.*0;
-Nx=128;
-Ny=16;
-Nz=128;
-%uphi=reshape(uphi,Nx,1,Nz);
-%wphi=reshape(wphi,Nx,1,Nz);
 c=2;
+kx=pex*[0:Nx/2,-Nx/2+1:-1]';
+
 %c=0;
 for tstep=tstart:step:tend
     % fn=		sprintf('DAT000%03d99999999',tstep)
@@ -41,12 +47,12 @@ for tstep=tstart:step:tend
     fng = fullfile(baseDir,fnmat);
     %fng=fullfile(baseDir,'grid.mat');
     load(fng);
-    fnp=sprintf('potvel%014d.mat',tstep);
+%    fnp=sprintf('potvel%014d.mat',tstep);
 %fnp=sprintf('potvel.mat');
-    fnp=fullfile(baseDir,fnp);
+%    fnp=fullfile(baseDir,fnp);
 fnja = sprintf('jafields%014d.mat',tstep)
 fnja = fullfile(baseDir,fnja);
-load(fnp)
+%load(fnp)
     % info=h5info(fname)
     fprintf('Reading %s\n', fname);
     u    = h5read(fname, '/u');
@@ -58,6 +64,13 @@ load(fnp)
     zz=zz';
     Ly=2*pi/pey;
     Lx=2*pi/pex;
+
+	ct=c*time;
+        kd = exp((-1i*ct).*kx);
+        kdis = reshape(kd,[Nx,1,1]);
+	uphis=ifft( (fup.*kdis),[],1,'symmetric');
+	wphis=ifft( (fwp.*kdis),[],1,'symmetric');
+
     load(fnamemat)
     
     % xshift = c*time;
@@ -65,8 +78,6 @@ load(fnp)
     % ishift=round(xshift/dx);
     % uphis=circshift(uphi,ishift,1);
     % wphis=circshift(wphi,ishift,1);
-uphis=uphi;
-wphis=wphi;
 
     ox = dwdy-dvdz;
     oy = dudz-dwdx;

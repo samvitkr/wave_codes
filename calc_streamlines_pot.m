@@ -2,6 +2,7 @@ close all
 clear 
 Nx=128;
 Nz=128;
+Lx=2*pi;
 load('grid.mat')
 load('potexact.mat')
 %load('../wave_c_2/grid.mat')
@@ -139,14 +140,29 @@ xi_vec   = double(squeeze(X(:, 1, 1)));
 psi_vec  = double(squeeze(Y(1, :, 1)));
 H_bar    = double(Z(1,1,end));
 zeta_vec = double(squeeze(Z(1,1,:) - Z(1,1,1))) ./ (H_bar - double(Z(1,1,1)));
-xq = double(X_slice(istart:istep:iend, :)');
-c=2;
+phi_target = Lx * (0:Nx-1)' / Nx;
+x_uniform_phi = zeros(Nx, num_lines);
+slq=sl.*0;
+for idx = 1:num_lines
+    
+    z_line = sl(:, idx);
+    phi_current = interpolateSolution(phiexact, x_1D, z_line);
+    phi_current = Lx * (phi_current - phi_current(1)) / (phi_current(end) - phi_current(1));
+    [phi_clean, unique_idx] = unique(phi_current);
+    x_clean = x_1D(unique_idx);
+    x_uniform_phi(:, idx) = interp1(phi_clean, x_clean, phi_target, 'spline', 'extrap');
+    slq(:,idx)=cos(k0 * x_uniform_phi(:,idx)) * asl(idx) + msl(idx);
+end
+xq=x_uniform_phi;
+%xq = double(X_slice(istart:istep:iend, :)');
+%c=2;
 %%
-save('slines.mat','sl','asl','msl','k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','c');
-
+save('slines.mat','sl','slq','asl','msl','k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','c');
+%%
 hold on
-plot(X_slice(istart:istep:iend,:)',slnum,':b')
-plot(X_slice(istart:istep:iend,:)',sl,'-k')
-plot(x_1D,z0,'-k','LineWidth',1.5)
+%plot(X_slice(istart:istep:iend,:)',slnum,':b')
+%plot(X_slice(istart:istep:iend,:)',sl,'-sk')
+%plot(x_1D,z0,'-k','LineWidth',1.5)
+plot(x_uniform_phi,slq,'-ok')
 hold off
 
