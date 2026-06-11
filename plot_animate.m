@@ -3,15 +3,25 @@ clear
 close all
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
+%baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
+baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+Nx=256;
+Ny=192;
+Nz=128;
 
 x1=10;
 y1=10;
 width=1100;
 height=600;
-tstart=20200000;
-step=200000;
-tend=32000000;
+% tstart=20200000;
+% step=200000;
+% tend=32000000;
+c=2;
+
+tstart=3025000000;
+step  =   5000000;
+tend  =3820000000;
+
 ret=180;
 %%
 fvn=fullfile(baseDir,'vel_field.avi');
@@ -27,6 +37,7 @@ fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
 % info=h5info(fname)
 fnmat = sprintf('grid%014d.mat',tstep);
 %fnmat='grid.mat';
+load((fullfile(baseDir,'grid.mat')))
 fng = fullfile(baseDir,fnmat);
 
 fnmat=sprintf('gradflux%014d.mat',tstep);

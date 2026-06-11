@@ -1,10 +1,22 @@
 clear
 close all
-baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
-Nx=128;
-Ny=32;
+baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+Nx=256;
+Ny=192;
 Nz=128;
-load("slines.mat");
+c=2;
+fn    = 'grid.h5';
+fname = fullfile(baseDir,fn);
+pex  = h5read(fname, '/pex');
+pey  = h5read(fname, '/pey');
+kx=pex*[0:Nx/2-1,-Nx/2:-1]';
+ky=pey*[0:Ny/2-1,-Ny/2:-1]';
+Lx=2*pi/pex;
+Ly=2*pi/pey;
+%L0=Lx/wave_n;
+x=[0:Nx-1]*Lx/Nx;
+
+load(fullfile(baseDir,"slines.mat"));
 eta= a0*cos(k0 * x_1D);
 % sl = cos(k0 * x_1D) * asl + msl;
 % sldydx = -sin(k0 * x_1D) * (asl*k0);
@@ -17,28 +29,27 @@ H_bar=1;
 
 Fu_3D   = griddedInterpolant(XI_3D, PSI_3D, ZETA_3D, zeros(size(XI_3D)), 'linear', 'none');
 
-XQ = permute(repmat(xq, [1, 1, Ny]), [1, 3, 2]);
-YQ = repmat(psi_clean(:)', [Nx, 1, length(msl)]);
+XQ = double(permute(repmat(xq, [1, 1, Ny]), [1, 3, 2]));
+YQ = double(repmat(psi_clean(:)', [Nx, 1, length(msl)]));
 numl=length(msl);
 zq = double(slq);
-ZQ = permute(repmat(zq, [1, 1, Ny]), [1, 3, 2]);
-ETA_Q  = a0 * cos(k0 * (XQ));
-ZETA_Q = (ZQ - ETA_Q) ./ (H_bar - ETA_Q);
 
-load("potvel.mat");
+ZQ = double(permute(repmat(zq, [1, 1, Ny]), [1, 3, 2]));
+ETA_Q  = double(a0 * cos(k0 * XQ));
+ZETA_Q = double((ZQ - ETA_Q) ./ (H_bar - ETA_Q));
+%load("potvel.mat");
+load(fullfile(baseDir, 'phi_interp_2d.mat'));
 up=sqrt(uphi.^2+wphi.^2);
 uph=uphi./up;
 wph=wphi./up;
 W=1./sqrt(up);
 
 tic
-tstart=20200000;
-step=  200000;
-tend=  32000000;
-Nx=128;
-Ny=32;
-Nz=128;
-c=2;
+
+tstart=3025000000;
+step  =   5000000;
+tend  =3820000000;
+
 me = [];
 counter=0;
 
@@ -46,11 +57,11 @@ phiad=zeros(Nx,Ny,numl);
 phist=zeros(Nx,Ny,numl) ;
 
 
-    fn=sprintf('Sol%014d.h5',tstart);
-    fname = fullfile(baseDir,fn);
- pex = h5read(fname,'/pex');
-    pey = h5read(fname,'/pey');
-    kx=pex*[0:Nx/2-1,0,-Nx/2+1:-1]';
+%    fn=sprintf('Sol%014d.h5',tstart);
+%    fname = fullfile(baseDir,fn);
+% pex = h5read(fname,'/pex');
+%    pey = h5read(fname,'/pey');
+%    kx=pex*[0:Nx/2-1,0,-Nx/2+1:-1]';
 
 
 
