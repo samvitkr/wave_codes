@@ -43,12 +43,14 @@ Phi_2D = single(reshape(phi_2d_flat, [Nx, Nz]));
 fprintf('Saving 2D interpolated potential to %s...\n', fn_out);
 fprintf('Interpolation complete.\n');
 
-%%
+%
 zz   = h5read(fname, '/zz');
 zw   = h5read(fname,'/zw');
 pex  = h5read(fname, '/pex');
 
-u=reshape(Phi_2D,Nx, 1, Nz)-X(:,1,:);
+u=reshape(Phi_2D,Nx, 1, Nz);%-X(:,1,:);
+u = u-u(:,1,1);
+%%
 kx=pex*[0:Nx/2-1,-Nx/2:-1]';
 
 dudzeta=zeros(size(u));

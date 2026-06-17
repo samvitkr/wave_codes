@@ -16,9 +16,10 @@ k0=wave_n*pex;
 a=ak/k0;
 %%
 H = 1;
-Nx = 1024*6;   % Adjusted nodes in X to maintain resolution over 3*Lx span
-Ny = 512;     % Nodes in Y
-
+Nx = 256*6;   % Adjusted nodes in X to maintain resolution over 3*Lx span
+Ny = 256;     % Nodes in Y
+% Nx=256;
+% Ny=128;
 % Create a standard PDE Model
 model = createpde();
 
@@ -93,33 +94,61 @@ for i = 1:numEdges
     end
 end
 
+% % ==========================================
+% % 5. APPLY BOUNDARY CONDITIONS & SOLVE
+% % ==========================================
+% % Dirichlet on Left (x=-Lx) and Right (x=2Lx)
+% applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', LeftEdges, 'u', xMin);
+% applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', RightEdges, 'u', xMax);
+% 
+% % Neumann on Bottom and Top 
+% applyBoundaryCondition(model_wavy, 'neumann', 'Edge', BottomEdges, 'g', 0);
+% applyBoundaryCondition(model_wavy, 'neumann', 'Edge', TopEdges, 'g', 0);
+% 
+% % Solve
+% results = solvepde(model_wavy);
+% phiexact=results;
+% f=fullfile(baseDir,'potexact.mat');
+% save(f,'phiexact','-v7.3');
+%%
+
 % ==========================================
 % 5. APPLY BOUNDARY CONDITIONS & SOLVE
 % ==========================================
-% Dirichlet on Left (x=-Lx) and Right (x=2Lx)
-applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', LeftEdges, 'u', xMin);
-applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', RightEdges, 'u', xMax);
+% Define boundary values at the inlet and outlet
+u_inlet = xMin;   % Currently evaluates to 0
+u_outlet = xMax;  % Currently evaluates to Lx
 
-% Neumann on Bottom and Top 
+% Dirichlet on Left and Right
+applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', LeftEdges, 'u', u_inlet);
+applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', RightEdges, 'u', u_outlet);
+
+% 1. Linear profile formula: u(x) = u_inlet + (u_outlet - u_inlet) * (x - xMin) / (xMax - xMin)
+% 2. Since u_inlet = xMin and u_outlet = xMax, this simplifies exactly to: u(x) = x
+%u_top_linear = @(location) location.x;
+%u_top_linear = @(location) u_inlet + (u_outlet - u_inlet) * (location.x - xMin) / (xMax - xMin);
+u_top_linear = @(location, state) u_inlet + (u_outlet - u_inlet) * (location.x - xMin) / (xMax - xMin);
+% Dirichlet on Top (Changed from Neumann to your linear function handle)
+applyBoundaryCondition(model_wavy, 'dirichlet', 'Edge', TopEdges, 'u', u_top_linear);
+
+% Neumann on Bottom remains unchanged
 applyBoundaryCondition(model_wavy, 'neumann', 'Edge', BottomEdges, 'g', 0);
-applyBoundaryCondition(model_wavy, 'neumann', 'Edge', TopEdges, 'g', 0);
 
 % Solve
 results = solvepde(model_wavy);
 phiexact=results;
 f=fullfile(baseDir,'potexact.mat');
 save(f,'phiexact','-v7.3');
-
 %%
 
-figure;
-pdeplot(model_wavy, 'XYData', results.NodalSolution, 'Colormap', 'jet');
-axis equal;
-xlim([xMin xMax]);
-ylim([-a 1]);
-title('Exact Nodal Velocity Potential (\phi)');
-xlabel('x');
-ylabel('z');
+% figure;
+% pdeplot(model_wavy, 'XYData', results.NodalSolution, 'Colormap', 'jet');
+% axis equal;
+% xlim([xMin xMax]);
+% ylim([-a 1]);
+% title('Exact Nodal Velocity Potential (\phi)');
+% xlabel('x');
+% ylabel('z');
 
 %% Helper function
 function [xm, ym] = getEdgeMidpoint(model, edgeID)

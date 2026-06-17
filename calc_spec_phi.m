@@ -5,6 +5,8 @@ Nx=256;
 Ny=192;
 Nz=128;
 c=2;
+ak=0.2;
+
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn);
 pex  = h5read(fname, '/pex');
@@ -29,21 +31,27 @@ H_bar=1;
 
 Fu_3D   = griddedInterpolant(XI_3D, PSI_3D, ZETA_3D, zeros(size(XI_3D)), 'linear', 'none');
 
-XQ = double(permute(repmat(xq, [1, 1, Ny]), [1, 3, 2]));
-YQ = double(repmat(psi_clean(:)', [Nx, 1, length(msl)]));
-numl=length(msl);
-zq = double(slq);
+load(fullfile(baseDir,'uniform_phi_grid.mat'))
+[~,msl] = size(Xgphi);
+numl=msl;
+XQ = double(permute(repmat(Xgphi, [1, 1, Ny]), [1, 3, 2]));
+YQ = double(repmat(psi_clean(:)', [Nx, 1, numl]));
+ZQ = double(permute(repmat(Zgphi, [1, 1, Ny]), [1, 3, 2]));
 
-ZQ = double(permute(repmat(zq, [1, 1, Ny]), [1, 3, 2]));
-ETA_Q  = double(a0 * cos(k0 * XQ));
+% numl=length(msl);
+% zq = double(slq);
+% 
+% ZQ = double(permute(repmat(zq, [1, 1, Ny]), [1, 3, 2]));
+ETA_Q  = double(a0 * cos(k0*XQ));
 ZETA_Q = double((ZQ - ETA_Q) ./ (H_bar - ETA_Q));
-%load("potvel.mat");
+
+
 load(fullfile(baseDir, 'phi_interp_2d.mat'));
 up=sqrt(uphi.^2+wphi.^2);
 uph=uphi./up;
 wph=wphi./up;
 W=1./sqrt(up);
-
+%%
 tic
 
 tstart=3025000000;
@@ -55,15 +63,6 @@ counter=0;
 
 phiad=zeros(Nx,Ny,numl);
 phist=zeros(Nx,Ny,numl) ;
-
-
-%    fn=sprintf('Sol%014d.h5',tstart);
-%    fname = fullfile(baseDir,fn);
-% pex = h5read(fname,'/pex');
-%    pey = h5read(fname,'/pey');
-%    kx=pex*[0:Nx/2-1,0,-Nx/2+1:-1]';
-
-
 
 for tstep=tstart:step:tend
     counter=counter+1;
@@ -93,13 +92,6 @@ for tstep=tstart:step:tend
     ox =  ifft( (fft(ox,[],1).*kdis),[],1,'symmetric');
     oy =  ifft( (fft(oy,[],1).*kdis),[],1,'symmetric');
     oz =  ifft( (fft(oz,[],1).*kdis),[],1,'symmetric');
-
-    %ua = W.*(u.*uph + w.*wph);
-    %ub = W.*v;
-    %uc = W.*(-u.*wph + w.*uph);
-    %oa = W.*(ox.*uph + oz.*wph);
-    %ob = W.*oy;
-    %oc = W.*(-ox.*wph + oz.*uph);
 
     %Fu_3D.Values=W.*(u.*uph + w.*wph);
     %ua =Fu_3D(XQ, YQ, ZETA_Q);

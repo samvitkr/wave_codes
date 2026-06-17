@@ -179,7 +179,7 @@ xq=x_uniform_phi;
 
 mslines=fullfile(baseDir,'slines.mat');
 %save(mslines,'sl','slq','asl','msl','k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','x_uniform_phi','delta','delta_sl');
-save(mslines,'delta','delta_sl','-append')
+save(mslines,'k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','x_uniform_phi','delta','delta_sl');...'-append')
 
 
 % %%

@@ -3,8 +3,8 @@ close all
 baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
 load(fullfile(baseDir,'grid.mat'),'X','Z');
 load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi');
-Zs = squeeze(Z(:,1,:));
-Xs = squeeze(X(:,1,:));
+Zs = double(squeeze(Z(:,1,:)));
+Xs = double(squeeze(X(:,1,:)));
 pex=0.5;
 Lx=2*pi/pex;
 uphi = squeeze(uphi);
@@ -12,10 +12,9 @@ clear Z;
 delta = uphi.*0;
 [Nx, Nz]=size(Zs);
 
-i=1;
 for i =1:Nx;
-u=uphi(1,:);
-z = Zs(1,:);
+u=uphi(i,:);
+z = Zs(i,:);
 uf=double(flip(u)');
 zf=double(flip(z)');
 
@@ -24,7 +23,7 @@ delta_i = delta_i';
 delta(i,:)=delta_i;
 end
 
-% 1. Initialize your output matrices (Nx rows by 120 columns)
+
 num_contours = 128;
 Xsl = zeros(Nx, num_contours);
 Zsl = zeros(Nx, num_contours);
@@ -66,22 +65,121 @@ for nc = 1:num_contours
 end
 Zdelta = Zsl;
 %%
-x_uniform_phi = zeros(Nx, num_contours);
-phi_target = Lx * (0:Nx-1)' / Nx;
- load(fullfile(baseDir,'potexact.mat'));
+%% Pre-allocate your final coordinate matrices (Nz x num_contours2)
+load(fullfile(baseDir,'potexact.mat')); % Loads 'phiexact'
 
-for idx = 1:num_contours
+num_contours2 = 256; % Adjust to the number of contours you want
+Xphi = zeros(Nz, num_contours2);
+Zphi = zeros(Nz, num_contours2);
 
-    z_line = double(Zsl(:, idx));
-    x_1D = double(Xs(:,idx));
-    phi_current = interpolateSolution(phiexact, x_1D, z_line);
-    phi_current = Lx * (phi_current - phi_current(1)) / (phi_current(end) - phi_current(1));
-    [phi_clean, unique_idx] = unique(phi_current);
-    x_clean = x_1D(unique_idx);
-    x_uniform_phi(:, idx) = interp1(phi_clean, x_clean, phi_target, 'spline', 'extrap');
-    %slq(:,idx)=cos(k0 * x_uniform_phi(:,idx)) * asl(idx) + msl(idx);
+% 1. Loop through each contour channel
+for nc2 = 1:num_contours2
+    
+    % Enforce your starting condition at the top boundary (Nz)
+    Xphi(Nz, nc2) = Xs(nc2, Nz);
+    Zphi(Nz, nc2) = Zs(nc2, Nz);
+    
+    % Find the specific target 'phiexact' value at this top grid point
+    target_val_phi = interpolateSolution(phiexact, Xphi(Nz, nc2), Zphi(Nz, nc2));
+    
+    % 2. Trace this specific phiexact value downwards (j = Nz-1 down to 1)
+    for j = Nz-1:-1:2
+        
+        % Extract the X and Z coordinate vectors for the entire curved grid layer 'j'
+        x_layer = Xs(:, j);
+        z_layer = Zs(:, j);
+        
+        % Evaluate the exact solution across this curved layer
+        phi_layer = interpolateSolution(phiexact, x_layer, z_layer);
+        
+        % Remove duplicates/non-unique values to ensure strictly monotonic points for interp1
+        [phi_unique, unique_idx] = unique(phi_layer);
+        x_unique = x_layer(unique_idx);
+        z_unique = z_layer(unique_idx); % We must now extract unique Zs as well
+        
+        % 3. Interpolate to find BOTH the exact X and Z position where phi == target_val_phi
+        if length(phi_unique) > 1 && ...
+           target_val_phi >= min(phi_unique) && ...
+           target_val_phi <= max(phi_unique)
+            
+            % Interpolate along the curve to find the exact (X, Z) coordinate
+            Xphi(j, nc2) = interp1(phi_unique, x_unique, target_val_phi, 'linear');
+            Zphi(j, nc2) = interp1(phi_unique, z_unique, target_val_phi, 'linear');
+        else
+            % If the target value leaves the boundary of this layer, pad with NaN
+            Xphi(j, nc2) = NaN;
+            Zphi(j, nc2) = NaN;
+        end
+    end
 end
-xq=x_uniform_phi;
+%%
+X_phi = Xphi(2:end,:)';
+Z_phi = Zphi(2:end,:)';
+save(fullfile(baseDir,"slines.mat"),'Zsl','X_phi','Z_phi','-append')
 
-%sl = fullfile(baseDir,'slines.mat');
-%save(sl,'Zdelta','delta','-append')
+%% Calculate Intersections using custom 'intersections.m'
+
+% Pre-allocate the orthogonal grid matrices with NaNs
+% Dim 1 (i): constant phi contour
+% Dim 2 (j): constant stream function contour
+Xgphi = NaN(num_contours2, num_contours);
+Zgphi = NaN(num_contours2, num_contours);
+
+% 1. Loop over each constant phi contour (index 'i')
+for i = 1:num_contours2
+    
+    % Extract the current phi contour (column 'i')
+    x_phi = Xphi(2:end, i);
+    z_phi = Zphi(2:end, i);
+    
+    % Strip NaNs to optimize the bounding box checks inside intersections.m
+    valid_phi = ~isnan(x_phi) & ~isnan(z_phi);
+    x_phi = x_phi(valid_phi);
+    z_phi = z_phi(valid_phi);
+    
+    % 2. Loop over each constant stream function contour (index 'j')
+    for j = 1:num_contours
+        
+        % Extract the current stream function contour (column 'j')
+        x_psi = Xsl(:, j);
+        z_psi = Zsl(:, j);
+        
+        % Strip NaNs
+        valid_psi = ~isnan(x_psi) & ~isnan(z_psi);
+        x_psi = x_psi(valid_psi);
+        z_psi = z_psi(valid_psi);
+        
+        % Proceed only if both curves have at least 2 points to form a segment
+        if length(x_phi) > 1 && length(x_psi) > 1
+            
+            % Call the uploaded intersections function
+            [x_int, z_int] = intersections(x_phi, z_phi, x_psi, z_psi);
+            
+            % If one or more intersections exist, store the primary one
+            if ~isempty(x_int)
+                Xgphi(i, j) = x_int(1);
+                Zgphi(i, j) = z_int(1);
+            end
+            
+        end
+    end
+end
+
+%%
+Xgphi=Xgphi(:,2:end);
+Zgphi=Zgphi(:,2:end);
+save(fullfile(baseDir,'uniform_phi_grid.mat'),'Xgphi','Zgphi','-v7.3')
+% Optional: Visualize the final generated grid
+%figure;
+%hold on;
+%% Plot the phi contours in red
+%plot(Xphi, Zphi, 'r-', 'LineWidth', 0.5);
+%% Plot the stream function contours in blue
+%plot(Xsl, Zsl, 'b-', 'LineWidth', 0.5);
+%% Plot the intersection points in black
+%plot(Xgphi(:), Zgphi(:), 'k.', 'MarkerSize', 10);
+%hold off;
+%title('Orthogonal Grid Intersections');
+%xlabel('X');
+%ylabel('Z');
+%axis equal;
