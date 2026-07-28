@@ -1,6 +1,8 @@
 clear; 
 close all;
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+% baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+
 fn_grid = fullfile(baseDir, 'grid.mat');
 fn_pot  = fullfile(baseDir, 'potexact.mat');
 fn_out  = fullfile(baseDir, 'phi_interp_2d.mat'); % Saving as a 2D specific file
@@ -48,8 +50,7 @@ zz   = h5read(fname, '/zz');
 zw   = h5read(fname,'/zw');
 pex  = h5read(fname, '/pex');
 
-u=reshape(Phi_2D,Nx, 1, Nz);%-X(:,1,:);
-u = u-u(:,1,1);
+u=reshape(Phi_2D,Nx, 1, Nz)-X(:,1,:);
 %%
 kx=pex*[0:Nx/2-1,-Nx/2:-1]';
 
@@ -85,8 +86,8 @@ uslice(isnan(uslice))=0;
 udz=sum(uslice(:,2:end).*dzw,2);
 Jx=udz.*Jacobian;
 J=mean(Jx);
-uphi=uphi./J;
-Phi_2D=Phi_2D./J;
-wphi=wphi./J;
+%uphi=uphi./J;
+%Phi_2D=Phi_2D./J;
+%wphi=wphi./J;
 
 save(fn_out, 'J','Phi_2D','uphi','wphi', '-v7.3');

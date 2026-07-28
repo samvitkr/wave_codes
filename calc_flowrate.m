@@ -1,10 +1,27 @@
 
 clear
 close all
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-tstart=3025000000;
-step  =   5000000;
-tend  =3820000000;
+%baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+c=14
+%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run'
+
+%tstart=3025000000;
+%step  =   5000000;
+%tend  =3820000000;
+
+%tstart=3020400000;
+%step  =    400000;
+%tend  =3084000000;
+
+% tstart=3020200000;
+% step  =    200000;
+% tend  =3052000000;
+
+tstart=3550000000;
+step = 400000;
+  tend=3578000000;
+  
 load(fullfile(baseDir,'grid.mat'))
 
 fn    = 'grid.h5';
@@ -17,7 +34,6 @@ pey = h5read(fname, '/pey');
 
 dzw =diff(zw)';
 Jacobian=1./dZetadz;
-c=2;
 t=[];
 flowrate=[];
 dzw=diff(zw)';
@@ -39,7 +55,7 @@ for tstep=tstart:step:tend
 
     kd = exp((1i*ct).*kx);
     kdis = reshape(kd,[Nx,1,1]);
-    u = ifft( (fft(u,[],1).*kdis),[],1,'symmetric');
+    u = ifft( (fft(u,[],1).*kdis),[],1,'symmetric')-c;
 
     uslice = squeeze(dy.*sum(u,2));
     udz=sum(uslice(:,2:end).*dzw,2);

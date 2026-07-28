@@ -50,19 +50,24 @@ for tstep=tstart:step:tend
 	fngs = sprintf('jafields%014d.mat',tstep)
  	fng = fullfile(baseDir,fngs);
  	load(fng)
+
+        viscav	= viscav+ JAvisc;
+        nlav 	= nlav 	+ JAnl;
+        convav	= convav+ JAconv;
+	strav	= strav + JAstr;
         
-	fvisc = fft(JAvisc,[],1).*kdis;
-        viscav = viscav+ifft(fvisc,[],1,'symmetric');
-        clear fvisc JAvisc
-        fnl = fft(JAnl,[],1).*kdis;
-        nlav = nlav+ifft(fnl,[],1,'symmetric');
-        clear fnl JAnl	
-	fconv = fft(JAconv,[],1).*kdis;
-        convav = convav+ifft(fconv,[],1,'symmetric');
-        clear fconv JAconv
-	fstr = fft(JAstr,[],1).*kdis;
-        strav = strav+ifft(fstr,[],1,'symmetric');
-        clear fstr JAstr
+	%fvisc = fft(JAvisc,[],1).*kdis;
+        %viscav = viscav+ifft(fvisc,[],1,'symmetric');
+	%clear fvisc JAvisc
+        %fnl = fft(JAnl,[],1).*kdis;
+        %nlav = nlav+ifft(fnl,[],1,'symmetric');
+        %clear fnl JAnl	
+	%fconv = fft(JAconv,[],1).*kdis;
+        %convav = convav+ifft(fconv,[],1,'symmetric');
+        %clear fconv JAconv
+	%fstr = fft(JAstr,[],1).*kdis;
+        %strav = strav+ifft(fstr,[],1,'symmetric');
+        %clear fstr JAstr
 
 	uav = uav + ifft( (fft(u,[],1).*kdis),[],1,'symmetric');
 	vav = vav + ifft( (fft(v,[],1).*kdis),[],1,'symmetric');

@@ -64,35 +64,36 @@ counter=counter+1;
     fngs = sprintf('jafields%014d.mat',tstep)
         fng = fullfile(baseDir,fngs);
         load(fng)
-	fconv = fft(JAconv,[],1).*kdis;
-         conv = ifft(fconv,[],1,'symmetric');
-	 convp = convp + mp.*conv;
-	 convn = convn + mn.*conv;
+	
+	%fconv = fft(JAconv,[],1).*kdis;
+        %conv = ifft(fconv,[],1,'symmetric');	
+       	convp=convp+mp.*JAconv;
+	convn=convn+mn.*JAconv;
 
-	fstr = fft(JAstr,[],1).*kdis;
-         str = ifft(fstr,[],1,'symmetric');
-         strp = strp + mp.*str;
-    	 strn = strn + mn.*str;
+	%fstr = fft(JAstr,[],1).*kdis;
+        %str = ifft(fstr,[],1,'symmetric');
+         strp = strp + mp.*JAstr;
+    	 strn = strn + mn.*JAstr;
 
 end
-convp = convp./counter;
-convn = convn./counter;
-strp = strp./counter;
-strn = strn./counter;
+convp =squeeze(mean(convp./counter,2));
+convn =squeeze(mean(convn./counter,2));
+strp = squeeze(mean( strp./counter,2));
+strn = squeeze(mean( strn./counter,2));
 
-for id = 0:wave_n-1
-        xdis  = id*L0;
-        kd    = exp((1i*xdis).*kx);
-        kdis  = reshape(kd,[Nx,1,1]);
-        convp  = convp  + ifft( (fft(convp,[],1).*kdis),[],1,'symmetric');
-        convn  = convn  + ifft( (fft(convn,[],1).*kdis),[],1,'symmetric');
-        strp  = strp  + ifft( (fft(strp,[],1).*kdis),[],1,'symmetric');
-        strn  = strn  + ifft( (fft(strn,[],1).*kdis),[],1,'symmetric');
-end
-convp = squeeze(mean(convp(1:Nxl,:,:),2))./wave_n;
-convn = squeeze(mean(convn(1:Nxl,:,:),2))./wave_n;
-strp = squeeze(mean(strp(1:Nxl,:,:),2))./wave_n;
-strn = squeeze(mean(strn(1:Nxl,:,:),2))./wave_n;
+%for id = 0:wave_n-1
+%        xdis  = id*L0;
+%        kd    = exp((1i*xdis).*kx);
+%        kdis  = reshape(kd,[Nx,1,1]);
+%        convp  = convp  + ifft( (fft(convp,[],1).*kdis),[],1,'symmetric');
+%        convn  = convn  + ifft( (fft(convn,[],1).*kdis),[],1,'symmetric');
+%        strp  = strp  + ifft( (fft(strp,[],1).*kdis),[],1,'symmetric');
+%        strn  = strn  + ifft( (fft(strn,[],1).*kdis),[],1,'symmetric');
+%end
+%convp = squeeze(mean(convp(1:Nxl,:,:),2))./wave_n;
+%convn = squeeze(mean(convn(1:Nxl,:,:),2))./wave_n;
+%strp = squeeze(mean(strp(1:Nxl,:,:),2))./wave_n;
+%strn = squeeze(mean(strn(1:Nxl,:,:),2))./wave_n;
 
 
 fp = fullfile(baseDir,'partial_sum.mat');

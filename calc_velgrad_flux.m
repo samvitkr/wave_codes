@@ -3,11 +3,12 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run'
+%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run'
+baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.2;
+ak=0.1;
 wave_n=12;
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn);
@@ -28,9 +29,19 @@ load('grid.mat')
 tic
 ret=180;
 nu=1/ret;
-tstart=3025000000;
-step  =   5000000;
-tend  =3820000000;
+
+%tstart=3020400000;
+%step  =    400000;
+%tend  =3084000000;
+
+%tstart=3020200000;
+%step  =    200000;
+%tend  =3052000000;
+
+tstart=3550000000;
+step  =    400000;
+tend  =3578000000;
+
 
 for tstep=tstart:step:tend
     fng = sprintf('grid%014d.mat',tstep);
@@ -150,15 +161,6 @@ for tstep=tstart:step:tend
     lap_w = (dF1_w_dxi + dF3_w_dzeta) ./ Jinv + d2wdy2;
     viscw = single(nu .* lap_w);
 
-    % % % % ox = dwdy-dvdz;
-    % % % % oy = dudz-dwdx;
-    % % % % oz = dvdx-dudy;
-    % % % %
-    % % % % voz = single(v.*oz);
-    % % % % woy = single(wc.*oy);
-    % % % % uoy = single(u.*oy);
-    % % % % vox = single(v.*ox);
-    % % %
     outFile=fnamemat;
     save(outFile,'zz','wc',...
         'dudx','dvdx','dwdx',...
@@ -169,65 +171,3 @@ for tstep=tstart:step:tend
 
 end
 
-%%
-%div=dudx+dvdy+dwdz;
-%div2 = dudx+dwdz;
-%cl=20;
-%close all
-%figure
-%subplot(4,1,1)
-%pcolor(squeeze(X(:,10,:)),squeeze(Z(:,10,:)),squeeze(dudx(:,10,:) ))
-%shading flat
-%axis equal
-%xlim([X(1,1,1),X(end,end,end)])
-%ylim([min(Z,[],'all') max(Z,[],'all')])
-%c=colorbar;
-%clim([-cl cl])
-%ylabel('z')
-%ylabel(c,'du/dx')
-%
-%subplot(4,1,2)
-%pcolor(squeeze(X(:,10,:)),squeeze(Z(:,10,:)),squeeze(squeeze(dvdy(:,10,:))))
-%shading flat
-%axis equal
-%xlim([X(1,1,1),X(end,end,end)])
-%ylim([min(Z,[],'all') max(Z,[],'all')])
-%c1=colorbar;
-% clim([-cl cl])
-%ylabel('z')
-%ylabel(c1,'dv/dy')
-%
-%subplot(4,1,3)
-%pcolor(squeeze(X(:,10,:)),squeeze(Z(:,10,:)),squeeze(squeeze(dwdz(:,10,:))))
-%shading flat
-%axis equal
-%xlim([X(1,1,1),X(end,end,end)])
-%ylim([min(Z,[],'all') max(Z,[],'all')])
-%c2=colorbar;
-%clim([-cl cl])
-%ylabel('z')
-%ylabel(c2,'dw/dz')
-%
-%subplot(4,1,4)
-%pcolor(squeeze(X(:,10,:)),squeeze(Z(:,10,:)),squeeze(div(:,10,:)))
-%shading flat
-%axis equal
-%xlim([X(1,1,1),X(end,end,end)])
-%ylim([min(Z,[],'all') max(Z,[],'all')])
-%c3=colorbar;
-%clim([-cl cl])
-%ylabel('z')
-%ylabel(c3,'du/dx+dv/dy+dw/dz')
-%xlabel('x')
-%
-%figure
-%pcolor(squeeze(X(:,:,50)),squeeze(Y(:,:,50)),squeeze(div(:,:,50)))
-%shading flat
-%axis equal
-%xlim([X(1,1,1),X(end,end,end)])
-%ylim([min(Z,[],'all') max(Z,[],'all')])
-%c3=colorbar;
-%clim([-cl cl])
-%ylabel('z')
-%ylabel(c3,'du/dx+dv/dy+dw/dz')
-%xlabel('x')

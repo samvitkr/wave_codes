@@ -3,11 +3,13 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
 %baseDir = '/users/1/kuma0458/wave/c2ak2_re180/run';
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
+baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.2;
+ak=0.1;
 wave_n=12;
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn); 
@@ -55,9 +57,13 @@ for i =1:Nx
 end
 save(fngr,'X','Y','Z','Zw','dZetadz','dZetadx','a','k0')
 %%
-tstart=3025000000;
-step  =   5000000;
-tend  =3820000000;
+%tstart=3020200000;
+%step  =    200000;
+%tend  =3052000000;
+
+tstart=3550000000;
+step = 400000;
+  tend=3578000000;
 for tstep=tstart:step:tend
 	fn=sprintf('Sol%014d.h5',tstep)
 	fname   = fullfile(baseDir,fn);   % <-- edit if naming differs

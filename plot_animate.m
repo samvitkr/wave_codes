@@ -4,30 +4,45 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
 %baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+
+% baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+% c=2;
+
+baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+c=14;
+
+% baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
+% c=24;
+
 Nx=256;
 Ny=192;
 Nz=128;
 
 x1=10;
 y1=10;
-width=1100;
-height=600;
+width=1098;
+height=541;
 % tstart=20200000;
 % step=200000;
 % tend=32000000;
-c=2;
 
-tstart=3025000000;
-step  =   5000000;
-tend  =3820000000;
+% tstart=3025000000;
+% step  =   5000000;
+% tend  =3820000000;
 
+tstart=3240000000;
+step  =    400000;
+tend  =3248000000;
+
+% tstart=3020200000;
+% step  =    200000;
+% tend  =3052000000;
 ret=180;
 %%
 fvn=fullfile(baseDir,'vel_field.avi');
 %v=VideoWriter('vel_field',);
 v = VideoWriter(fvn, 'Motion JPEG AVI');
-v.FrameRate=2;
+v.FrameRate=0.5;
 open(v)
 f=figure('OuterPosition',[x1 y1 width height]);
 for tstep=tstart:step:tend
@@ -100,6 +115,10 @@ end
 cnl=400;
 cv=200;
 close all
+fnmat='grid.mat';
+fng = fullfile(baseDir,fnmat);
+load(fng)
+
 fvja=fullfile(baseDir,"Ja_field.avi")
  %vv = VideoWriter('Ja_field.avi', 'Motion JPEG AVI');
   vv = VideoWriter(fvja, 'Motion JPEG AVI');
@@ -112,9 +131,8 @@ for tstep=tstart:step:tend
 fn=sprintf('Sol%014d.h5',tstep)
 fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
 % info=h5info(fname)
-fnmat = sprintf('grid%014d.mat',tstep);
-%fnmat='grid.mat';
-fng = fullfile(baseDir,fnmat);
+%fnmat = sprintf('grid%014d.mat',tstep);
+%
 
 fnmat=sprintf('jafields%014d.mat',tstep);
     fnamemat = fullfile(baseDir,fnmat);
@@ -123,7 +141,6 @@ fnmat=sprintf('jafields%014d.mat',tstep);
 time = h5read(fname ,'/time')
 sgt=sprintf("t=%0.4f",time);
 
-load(fng)
 %
 
 t=tiledlayout(3,1);
@@ -173,7 +190,7 @@ end
 %%
 % close all
  vol=2*pi;
-fla=fullfile(baseDir,'JAseries.mat')
+fla=fullfile(baseDir,'JAseries_statwave.mat')
 load(fla)
 % load("JAseries.mat")
 fj=fullfile(baseDir,'flowrate.mat')
