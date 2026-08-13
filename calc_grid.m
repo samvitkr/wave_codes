@@ -2,9 +2,11 @@ clear
 close all
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
-%baseDir = '/users/1/kuma0458/wave/c2ak2_re180/run';
+%baseDir = '/users/1/kuma0458/wave/c2ak1_re180/run';
+%baseDir = '/scratch.global/kuma0458/c2ak1_re180/run';
 %baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
-baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
 
 Nx=256;
 Ny=192;
@@ -61,9 +63,18 @@ save(fngr,'X','Y','Z','Zw','dZetadz','dZetadx','a','k0')
 %step  =    200000;
 %tend  =3052000000;
 
-tstart=3550000000;
-step = 400000;
-  tend=3578000000;
+%tstart=3550000000;
+%step = 400000;
+%tend=3578000000;
+
+%tstart=4021250000; 
+%step =    1250000;
+%tend = 4270000000;
+
+tstart=3825000000; 
+step =    5000000;
+tend =4620000000;
+
 for tstep=tstart:step:tend
 	fn=sprintf('Sol%014d.h5',tstep)
 	fname   = fullfile(baseDir,fn);   % <-- edit if naming differs

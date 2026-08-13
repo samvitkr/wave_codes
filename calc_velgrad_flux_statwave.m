@@ -1,15 +1,12 @@
 clear
 close all
-%baseDir = '/users/1/kuma0458/wave/wavy_wall';
-%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
-%baseDir = '/users/1/kuma0458/wave/wave_c_2';
-%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run'
-%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
-%baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run'
+c=8;
+ak=0.1;
+
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.1;
 wave_n=12;
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn);
@@ -31,30 +28,14 @@ tic
 ret=180;
 nu=1/ret;
 
-%tstart=3020400000;
-%step  =    400000;
-%tend  =3084000000;
-
-%tstart=3020200000;
-%step  =    200000;
-%tend  =3052000000;
-
-%tstart=3550000000;
-%step  =    400000;
-%tend  =3578000000;
-
-%tstart=4021250000;
-%step =    1250000;
-%tend = 4270000000;
-
 tstart=3825000000;
 step =    5000000;
 tend =4620000000;
 
 for tstep=tstart:step:tend
-    fng = sprintf('grid%014d.mat',tstep);
-    fng=fullfile(baseDir,fng);
-    load(fng);
+    %fng = sprintf('grid%014d.mat',tstep);
+    %fng=fullfile(baseDir,fng);
+    %load(fng);
     fn=sprintf('Sol%014d.h5',tstep);
     fnmat=sprintf('gradflux%014d.mat',tstep);
     fname = fullfile(baseDir,fn);
@@ -67,12 +48,18 @@ for tstep=tstart:step:tend
     v    = h5read(fname, '/v');
     w    = h5read(fname, '/w');
     pp   = h5read(fname, '/pp');
-
+    time = h5read(fname, '/time');
+    ct   = c * time;
+    kd   = exp((1i*ct).*kx);
+    kdis = reshape(kd, [Nx, 1, 1]);
+    u  = ifft(fft(u, [], 1) .* kdis, [], 1, 'symmetric') - c;
+    v  = ifft(fft(v, [], 1) .* kdis, [], 1, 'symmetric');
     toc
     %% interpolate wc to cenn centers
     wc=permute(w,[3 1 2]);
     wc=interp1(zw(1:end-1),wc(1:end-1,:,:),zz);
     wc=single(permute(wc,[2 3 1]));
+    wc = ifft(fft(wc, [], 1) .* kdis, [], 1, 'symmetric');
     %toc
     %%% wave numbers and fft
 

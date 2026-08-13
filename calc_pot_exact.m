@@ -4,7 +4,9 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
 %baseDir = '/users/1/kuma0458/wave/c2ak2_re180/run';
 %baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+baseDir = '/scratch.global/kuma0458/c2ak1_re180/run';
+
 % ==========================================
 % 1. SETUP & GEOMETRY
 % ==========================================

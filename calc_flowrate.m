@@ -1,14 +1,17 @@
 
 clear
 close all
-%baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
-c=14
-%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run'
+baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+c=-2;
+%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+%c=14
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+%c=8;
+
 
 %tstart=3025000000;
 %step  =   5000000;
-%tend  =3820000000;
+%tend  =4020000000;
 
 %tstart=3020400000;
 %step  =    400000;
@@ -18,10 +21,18 @@ c=14
 % step  =    200000;
 % tend  =3052000000;
 
-tstart=3550000000;
-step = 400000;
-  tend=3578000000;
-  
+%tstart=3550000000;
+%step = 400000;
+%tend=3578000000;
+
+%tstart=4021250000;
+%step =    1250000;
+%tend = 4270000000;
+
+tstart=3825000000;
+step =    5000000;
+tend =4620000000;
+
 load(fullfile(baseDir,'grid.mat'))
 
 fn    = 'grid.h5';

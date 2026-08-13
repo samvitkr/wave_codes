@@ -4,12 +4,14 @@ tic
 %ret=10;
 ret=180;
 nu=1/ret;
-%baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-%c=2;
-baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
-c=14;
+baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+c=-2;
+%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+%c=14;
 %baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
 %c=24;
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+%c=8;
 
 Nx=256;
 Ny=192;
@@ -41,22 +43,9 @@ Tconvs=Ts;
 Tstrs=Ts;
 check=Jdot.*0;
 
-%tstart=3025000000;
-%step  =   5000000;
-%tend  =3820000000;
-
-% tstart=3020400000;
-% step  =    400000;
-% tend  =3084000000;
-
-% tstart=3020200000;
-% step  =    200000;
-% tend  =3052000000;
-
-tstart=3550000000;
-step  =    400000;
-tend  =3578000000;
-
+tstart=3825000000;
+step =    5000000;
+tend =4620000000;
 for tstep=tstart:step:tend
 	fn=sprintf('Sol%014d.h5',tstep);
 	fname = fullfile(baseDir,fn);

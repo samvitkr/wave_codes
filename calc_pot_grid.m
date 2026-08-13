@@ -1,7 +1,7 @@
 clear; 
 close all;
 % baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 
 fn_grid = fullfile(baseDir, 'grid.mat');
 fn_pot  = fullfile(baseDir, 'potexact.mat');
@@ -71,6 +71,7 @@ b  = reshape(b, 1, 1, []);
 c  = reshape(c, 1, 1, []);
 % Apply to u, v
 dudzeta(:,:,2:nz-1) =a.*u(:,:,3:nz)+b.*u(:,:,2:nz-1)+c.* u(:,:,1:nz-2);
+dudzeta(:,:,end)    = (u(:,:,end) - u(:,:,end-1)) ./ dz(end);
 dudz = single(dZetadz.*dudzeta);
 fxu =fft(u,[],1);
 dudxi=ifft( fxu.*(1i.*kx),[],1,'symmetric');
@@ -90,4 +91,69 @@ J=mean(Jx);
 %Phi_2D=Phi_2D./J;
 %wphi=wphi./J;
 
+% ... existing code ...
+%uphi = uphi ./ J;
+%wphi = wphi ./ J;
+%%
+% -----------------------------------------------------------
+% OPTION 1: PROJECT POTENTIAL FLOW (ENFORCE DISCRETE DIVERGENCE)
+% -----------------------------------------------------------
+fprintf('Projecting potential flow to enforce exact discrete divergence...\n');
+
+% Ensure uphi and wphi are 3D arrays to match grid sizes [Nx, 1, Nz]
+if ismatrix(uphi)
+    uphi = reshape(uphi, Nx, 1, Nz);
+    wphi = reshape(wphi, Nx, 1, Nz);
+end
+
+% Extract and format grid metrics for implicit expansion
+dZz = reshape(dZetadz, [Nx, 1, 1]);
+if ndims(dZetadx) == 3
+    dZx = dZetadx(:, 1, :);
+else
+    dZx = reshape(dZetadx, Nx, 1, Nz);
+end
+
+% 1. Compute discrete dudzeta for uphi (matching calc_velgrad_flux.m)
+duphidzeta = zeros(size(uphi), 'single');
+dz_phi = diff(zz);
+duphidzeta(:,:,1) = (uphi(:,:,2) - uphi(:,:,1)) ./ dz_phi(1);
+for iz = 2:Nz-1
+    a_p = 1/dz_phi(iz) - 1/(dz_phi(iz-1)+dz_phi(iz));
+    b_p = 1/dz_phi(iz-1) - 1/dz_phi(iz);
+    c_p = 1/(dz_phi(iz-1)+dz_phi(iz)) - 1/dz_phi(iz-1);
+    duphidzeta(:,:,iz) = a_p.*uphi(:,:,iz+1) + b_p.*uphi(:,:,iz) + c_p.*uphi(:,:,iz-1);
+end
+duphidzeta(:,:,Nz) = (uphi(:,:,Nz) - uphi(:,:,Nz-1)) ./ dz_phi(end);
+
+% 2. Compute exact discrete dudx for uphi
+fxuphi = fft(uphi, [], 1);
+duphidxi = ifft(fxuphi .* (1i.*kx), [], 1, 'symmetric');
+duphidx = duphidxi + dZx .* duphidzeta;
+
+% 3. Force wphi to exactly balance dudx
+% dwdz = dZz * dw/dzeta = -duphidx  => dw/dzeta = -duphidx / dZz
+dwphidzeta = -duphidx ./ dZz;
+
+% Initialize projected wphi and set bottom boundary condition
+% w = u * d(eta)/dx, where d(eta)/dx = -dZetadx / dZetadz at wall (iz=1)
+wphi_proj = zeros(size(wphi), 'single');
+detadx = -dZx(:,:,1) ./ dZz(:,:,1);
+wphi_proj(:,:,1) = uphi(:,:,1) .* detadx;
+
+% Integrate upwards using trapezoidal rule to explicitly construct wphi
+for iz = 2:Nz
+    wphi_proj(:,:,iz) = wphi_proj(:,:,iz-1) + 0.5 .* (dwphidzeta(:,:,iz) + dwphidzeta(:,:,iz-1)) .* dz_phi(iz-1);
+end
+
+% Replace loaded wphi with the strictly divergence-free field
+wphi = wphi_proj;
+fprintf('Projection complete.\n');
+% -----------------------------------------------------------
+
+% ... rest of your code ...
+% Ts = Jdot.*0;
+% phidots = Jdot.*0;
+
+%%
 save(fn_out, 'J','Phi_2D','uphi','wphi', '-v7.3');

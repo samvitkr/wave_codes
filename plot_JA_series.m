@@ -1,13 +1,32 @@
 clear
 close all
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
-%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+% baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 load(fullfile(baseDir,'JAseries_statwave.mat'))
 
 
 Nx=256;
 Ny=192;
 Nz=128;
+
+% tstart=3550000000;
+% step  =    400000;
+% tend  =3578000000;
+
+% tstart=3025000000;
+% step  =   5000000;
+% tend  =4020000000;
+% 
+tstart=4021250000;
+step =    1250000;
+tend = 4270000000;
+
+% tstart=3825000000;
+% step =    5000000;
+% tend =4620000000;
+
+t = [tstart:step:tend].*(1e-8);
+
 fname = fullfile(baseDir,'grid.h5');
 zz   = h5read(fname, '/zz');
 zw   = h5read(fname, '/zw');
@@ -24,18 +43,20 @@ load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi')
 figure
 subplot(1,2,1)
 hold on
-plot(phidots,'-r')
-plot(Ts,'-b')
-plot(phidots+Ts,'-k')
+plot(t,phidots,'-r')
+plot(t,Ts,'-.b')
+plot(t,phidots+Ts,'-k')
 hold off
 yline(vol)
+legend('(\phi_*/J_*)dJ/dt','T','T + (\phi_*/J_*)dJ/dt')
 subplot(1,2,2)
 hold on
 %plot(Tconvs,':b')
 %plot(Tstrs,'--b')
-plot(Tnls,'.-b')
-plot(Tviscs,'-.r')
-plot(Ts,'-.k')
+% plot(Tnls,'.-b')
+% plot(Tviscs,'-.r')
+% plot(Ts,'-.k')
+plot(t,check)
 hold off
 
 
@@ -53,4 +74,5 @@ plot(check./Jstar)
 
 load(fullfile(baseDir,'flowrate.mat'))
 figure
-plot(flowrate)
+%
+plot(flowrate./(2*pi),'o-')
