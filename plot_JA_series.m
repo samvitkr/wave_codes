@@ -2,7 +2,7 @@ clear
 close all
 % baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
-load(fullfile(baseDir,'JAseries_statwave.mat'))
+load(fullfile(baseDir,'JAseries_static.mat'))
 
 
 Nx=256;
@@ -48,7 +48,7 @@ plot(t,Ts,'-.b')
 plot(t,phidots+Ts,'-k')
 hold off
 yline(vol)
-legend('(\phi_*/J_*)dJ/dt','T','T + (\phi_*/J_*)dJ/dt')
+legend('(L_x/J_*)dJ/dt','T','T + (L_x/J_*)dJ/dt')
 subplot(1,2,2)
 hold on
 %plot(Tconvs,':b')
