@@ -3,18 +3,19 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run'
-%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+baseDir = '/scratch.global/kuma0458/c0ak2_re180/run'
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 %baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.1;
+ak=0.2;
 wave_n=12;
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn);
 fnmat = 'grid.mat';
 fngr   = fullfile(baseDir,fnmat);
+load(fngr)
 zz   = h5read(fname, '/zz');
 zw   = h5read(fname, '/zw');
 pex  = h5read(fname, '/pex');
@@ -26,7 +27,7 @@ kx=pex*[0:Nx/2-1,-Nx/2:-1]';
 ky=pey*[0:Ny/2-1,-Ny/2:-1]';
 
 
-load('grid.mat')
+%load('grid.mat')
 tic
 ret=180;
 nu=1/ret;
@@ -52,9 +53,9 @@ step =    5000000;
 tend =4620000000;
 
 for tstep=tstart:step:tend
-    fng = sprintf('grid%014d.mat',tstep);
-    fng=fullfile(baseDir,fng);
-    load(fng);
+    %fng = sprintf('grid%014d.mat',tstep);
+    %fng=fullfile(baseDir,fng);
+    %load(fng);
     fn=sprintf('Sol%014d.h5',tstep);
     fnmat=sprintf('gradflux%014d.mat',tstep);
     fname = fullfile(baseDir,fn);

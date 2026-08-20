@@ -1,119 +1,255 @@
-clear
-close all
+clear;
+close all;
 
-% baseDir = fullfile('/projects', 'standard', 'shenl','naras062','JA-Samvit','Retau-10','RUN-c0');
- baseDir = '/users/1/kuma0458/wave/wavy_wall';
-% baseDir = '/users/1/kuma0458/wave/wave_c_2';
-%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
+% ==========================================
+% 1. PARAMETERS & INITIALIZATION
+% ==========================================
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+c       = 8;
+ret     = 180;
+nu      = 1 / ret;
 
-tic
-ret = 10;
-nu = 1/ret;
-tstart = 20200000;
-step = 200000;
-tend = 32000000;
+Nx      = 256;
+Ny      = 192;
+Nz      = 128;
 
-fj = fullfile(baseDir, 'flowrate.mat');
-load(fj);
+tstart  = 4021250000;
+step    =    1250000;
+tend    = 4270000000;
 
-Ts = Jdot .* 0;
+% ==========================================
+% 2. LOAD STATIC GRID & METRICS
+% ==========================================
+fname_gridh5 = fullfile(baseDir, 'grid.h5');
+fprintf('Loading grid definitions...\n');
+zz  = h5read(fname_gridh5, '/zz');
+zw  = h5read(fname_gridh5, '/zw');
+pex = h5read(fname_gridh5, '/pex');
+pey = h5read(fname_gridh5, '/pey');
+
+Lx = 2 * pi / pex;
+Ly = 2 * pi / pey;
+
+% Wavenumbers (reshaped for implicit expansion)
+kx    = pex * [0:Nx/2-1, -Nx/2:-1]';
+ky    = pey * [0:Ny/2-1, -Ny/2:-1]';
+kx_3D = reshape(kx, [Nx, 1, 1]);
+ky_3D = reshape(ky, [1, Ny, 1]);
+
+% Load static grid file (applicable since we transform to the wave frame)
+load(fullfile(baseDir, 'grid.mat'), 'X', 'Y', 'Z', 'Zw', 'dZetadz', 'dZetadx');
+
+%numel(dZetadz)
+%numel(dZetadx)
+% Ensure proper 3D arrays for curvilinear metric terms
+dZetadx_3D = reshape(dZetadx, [Nx, 1, Nz]);
+dZetadz_3D = reshape(dZetadz, [Nx, 1, 1]);
+Jacobian   = 1 ./ dZetadz_3D;
+Jac_1D     = squeeze(Jacobian(:, 1, 1)); % dZetadz only varies in x
+vol        = trapz(X(:, 1, 1), Jac_1D);
+
+% ==========================================
+% 3. LOAD AUXILIARY DATA (POTENTIAL & FLOWRATE)
+% ==========================================
+load(fullfile(baseDir, 'flowrate.mat'), 't', 'flowrate', 'Jdot');
+load(fullfile(baseDir, 'phi_interp_2d.mat'), 'uphi', 'wphi', 'J');
+
+uphi = uphi ./ J;
+wphi = wphi ./ J;
+
+% Pre-allocate Time Series Arrays
+Ts      = Jdot .* 0;
+Tnls    = Jdot .* 0;
+Tviscs  = Jdot .* 0;
+Tconvs  = Jdot .* 0;
+Tstrs   = Jdot .* 0;
 phidots = Jdot .* 0;
-Tnls = Ts;
-Tviscs = Ts;
-check = Jdot .* 0;
+check   = Jdot .* 0;
 
-Nx = 128; Ny = 16; Nz = 128;
-c = 0;
+% ==========================================
+% 4. Z-DERIVATIVE STENCIL SETUP
+% ==========================================
+dz = diff(zz);
+nz = Nz;
+i      = 1:(nz-2);
+dz_i   = dz(i);
+dz_ip1 = dz(i+1);
+sumdz  = dz_i + dz_ip1;
 
-% --- MEMORY FIX 1: Load static files OUTSIDE the loop ---
-fng = fullfile(baseDir, 'grid.mat');
-load(fng); % Loads X, Z, dZetadz
+a_st = reshape(1./dz_ip1 - 1./sumdz, 1, 1, []);
+b_st = reshape(1./dz_i   - 1./dz_ip1, 1, 1, []);
+c_st = reshape(1./sumdz  - 1./dz_i, 1, 1, []);
 
-fnp = fullfile(baseDir, 'potvel.mat');
-load(fnp); % Loads uphi, wphi
-
-% Cast to single immediately to halve memory footprint
-uphis = single(uphi);
-wphis = single(wphi);
-clear uphi wphi % Remove double precision copies
-it=0;
+% ==========================================
+% 5. MAIN TIME LOOP
+% ==========================================
 for tstep = tstart:step:tend
-    it=it+1;
-    fn = sprintf('Sol%014d.h5', tstep);
-    fnmat = sprintf('gradflux%014d.mat', tstep);
-    fname = fullfile(baseDir, fn);
-    fnamemat = fullfile(baseDir, fnmat);
-    fnja = fullfile(baseDir, sprintf('jafields%014d.mat', tstep));
-
-    fprintf('Reading %s\n', fname);
+    fname = fullfile(baseDir, sprintf('Sol%014d.h5', tstep));
+    fprintf('Processing %s\n', fname);
     
-    u = single(h5read(fname, '/u'));
-    v = single(h5read(fname, '/v'));
-    % w = h5read(fname, '/w'); <--- REMOVED: 'w' is never used in math below, saving ~1/3 memory
-    
+    u    = h5read(fname, '/u');
+    v    = h5read(fname, '/v');
+    w    = h5read(fname, '/w');
     time = h5read(fname, '/time');
-    zz = h5read(fname, '/zz');
-    pey = h5read(fname, '/pey');
-    pex = h5read(fname, '/pex');
-    zz = zz';
-    Ly = 2*pi/pey;
-    Lx = 2*pi/pex;
-
-    % --- MEMORY FIX 2: Load variables into a struct to clear them aggressively ---
-    GF = load(fnamemat);
-
-    % Compute intermediate values and clear the ingredients immediately
-    oy = single(GF.dudz - GF.dwdx);
-    woy = single(GF.wc) .* oy;
-    uoy = (u - c) .* oy;
-    clear oy; 
+    ct   = c * time;
     
-    ox = single(GF.dwdy - GF.dvdz);
-    vox = v .* ox;
-    clear ox;
+    % --- A. SHIFT TO STATIONARY WAVE FRAME ---
+    kdis = reshape(exp((1i * ct) .* kx), [Nx, 1, 1]);
     
-    oz = single(GF.dvdx - GF.dudy);
-    voz = v .* oz;
-    clear oz v u; % We no longer need u, v, or oz
-
-    % Compute Nonlinear and Viscous Terms
-    JAnl = uphis .* (voz - woy) + wphis .* (uoy - vox);
-    clear voz woy uoy vox % Clear massive intermediates
+    u = ifft(fft(u, [], 1) .* kdis, [], 1, 'symmetric') - c;
+    v = ifft(fft(v, [], 1) .* kdis, [], 1, 'symmetric');
+    w = ifft(fft(w, [], 1) .* kdis, [], 1, 'symmetric');
     
-    JAvisc = uphis .* single(GF.viscu) + wphis .* single(GF.viscw);
-    clear GF % Free the rest of the gradflux structure entirely
+    % Interpolate w to cell centers
+    wc = permute(w, [3 1 2]);
+    wc = interp1(zw(1:end-1), wc(1:end-1, :, :), zz);
+    wc = single(permute(wc, [2 3 1]));
     
-    % Clean up NaNs
-    JAnl(isnan(JAnl)) = 0;
+    % --- B. VERTICAL GRADIENTS (d/dzeta) ---
+    dudzeta = zeros(size(u), 'single');
+    dvdzeta = zeros(size(v), 'single');
+    dwdzeta = zeros(size(wc), 'single');
+    
+    % Lower Boundary Stencils
+    dudzeta(:, :, 1) = (u(:, :, 2)  - u(:, :, 1))  ./ dz(1);
+    dvdzeta(:, :, 1) = (v(:, :, 2)  - v(:, :, 1))  ./ dz(1);
+    dwdzeta(:, :, 1) = (wc(:, :, 2) - wc(:, :, 1)) ./ dz(1);
+    
+    % Upper Boundary Stencils
+    dudzeta(:, :, end) = (u(:, :, end) - u(:, :, end-1)) ./ dz(end);
+    dvdzeta(:, :, end) = (v(:, :, end) - v(:, :, end-1)) ./ dz(end);
+    dwdzeta(:, :, end) = (wc(:, :, end)- wc(:, :, end-1))./ dz(end);
+    
+    % Interior Stencils
+    dudzeta(:, :, 2:nz-1) = a_st.*u(:, :, 3:nz)  + b_st.*u(:, :, 2:nz-1)  + c_st.*u(:, :, 1:nz-2);
+    dvdzeta(:, :, 2:nz-1) = a_st.*v(:, :, 3:nz)  + b_st.*v(:, :, 2:nz-1)  + c_st.*v(:, :, 1:nz-2);
+    dwdzeta(:, :, 2:nz-1) = a_st.*wc(:, :, 3:nz) + b_st.*wc(:, :, 2:nz-1) + c_st.*wc(:, :, 1:nz-2);
+    
+    dudz = single(dZetadz_3D .* dudzeta);
+    dvdz = single(dZetadz_3D .* dvdzeta);
+    dwdz = single(dZetadz_3D .* dwdzeta);
+    
+    % --- C. HORIZONTAL FOURIER DERIVATIVES ---
+    % Spanwise (y-derivatives)
+    dudy = single(ifft(fft(u, [], 2)  .* (1i .* ky_3D), [], 2, 'symmetric'));
+    dvdy = single(ifft(fft(v, [], 2)  .* (1i .* ky_3D), [], 2, 'symmetric'));
+    dwdy = single(ifft(fft(wc, [], 2) .* (1i .* ky_3D), [], 2, 'symmetric'));
+    
+    d2udy2 = single(ifft(fft(u, [], 2)  .* (-(ky_3D).^2), [], 2, 'symmetric'));
+    d2vdy2 = single(ifft(fft(v, [], 2)  .* (-(ky_3D).^2), [], 2, 'symmetric'));
+    d2wdy2 = single(ifft(fft(wc, [], 2) .* (-(ky_3D).^2), [], 2, 'symmetric'));
+    
+    % Streamwise (xi-derivatives)
+    dudxi = ifft(fft(u, [], 1)  .* (1i .* kx_3D), [], 1, 'symmetric');
+    dvdxi = ifft(fft(v, [], 1)  .* (1i .* kx_3D), [], 1, 'symmetric');
+    dwdxi = ifft(fft(wc, [], 1) .* (1i .* kx_3D), [], 1, 'symmetric');
+    
+    dudx = single(dudxi + dZetadx_3D .* dudzeta);
+    dvdx = single(dvdxi + dZetadx_3D .* dvdzeta);
+    dwdx = single(dwdxi + dZetadx_3D .* dwdzeta);
+    
+    % --- D. EXACT VISCOUS LAPLACIANS ---
+    Jinv = 1 ./ dZetadz_3D;
+    
+    % Viscous u
+    F1_u = Jinv .* dudx;
+    dF1_u_dxi = ifft(fft(F1_u, [], 1) .* (1i .* kx_3D), [], 1, 'symmetric');
+    F3_u = Jinv .* (dZetadx_3D .* dudx + dZetadz_3D.^2 .* dudzeta);
+    dF3_u_dzeta = zeros(size(u), 'single');
+    dF3_u_dzeta(:, :, 1)     = (F3_u(:, :, 2) - F3_u(:, :, 1)) ./ dz(1);
+    dF3_u_dzeta(:, :, 2:nz-1) = a_st.*F3_u(:, :, 3:nz) + b_st.*F3_u(:, :, 2:nz-1) + c_st.*F3_u(:, :, 1:nz-2);
+    dF3_u_dzeta(:, :, end)   = (F3_u(:, :, end) - F3_u(:, :, end-1)) ./ dz(end);
+    viscu = single(nu .* ((dF1_u_dxi + dF3_u_dzeta) ./ Jinv + d2udy2));
+    
+    % Viscous v
+    F1_v = Jinv .* dvdx;
+    dF1_v_dxi = ifft(fft(F1_v, [], 1) .* (1i .* kx_3D), [], 1, 'symmetric');
+    F3_v = Jinv .* (dZetadx_3D .* dvdx + dZetadz_3D.^2 .* dvdzeta);
+    dF3_v_dzeta = zeros(size(v), 'single');
+    dF3_v_dzeta(:, :, 1)     = (F3_v(:, :, 2) - F3_v(:, :, 1)) ./ dz(1);
+    dF3_v_dzeta(:, :, 2:nz-1) = a_st.*F3_v(:, :, 3:nz) + b_st.*F3_v(:, :, 2:nz-1) + c_st.*F3_v(:, :, 1:nz-2);
+    dF3_v_dzeta(:, :, end)   = (F3_v(:, :, end) - F3_v(:, :, end-1)) ./ dz(end);
+    viscv = single(nu .* ((dF1_v_dxi + dF3_v_dzeta) ./ Jinv + d2vdy2));
+    
+    % Viscous w
+    F1_w = Jinv .* dwdx;
+    dF1_w_dxi = ifft(fft(F1_w, [], 1) .* (1i .* kx_3D), [], 1, 'symmetric');
+    F3_w = Jinv .* (dZetadx_3D .* dwdx + dZetadz_3D.^2 .* dwdzeta);
+    dF3_w_dzeta = zeros(size(wc), 'single');
+    dF3_w_dzeta(:, :, 1)     = (F3_w(:, :, 2) - F3_w(:, :, 1)) ./ dz(1);
+    dF3_w_dzeta(:, :, 2:nz-1) = a_st.*F3_w(:, :, 3:nz) + b_st.*F3_w(:, :, 2:nz-1) + c_st.*F3_w(:, :, 1:nz-2);
+    dF3_w_dzeta(:, :, end)   = (F3_w(:, :, end) - F3_w(:, :, end-1)) ./ dz(end);
+    viscw = single(nu .* ((dF1_w_dxi + dF3_w_dzeta) ./ Jinv + d2wdy2));
+    
+    % Save Gradients & Fluxes
+    fn_gradflux = fullfile(baseDir, sprintf('gradfluxstat%014d.mat', tstep));
+    save(fn_gradflux, 'zz', 'u', 'v', 'wc', 'dudx', 'dvdx', 'dwdx', ...
+         'dudy', 'dvdy', 'dwdy', 'dudz', 'dvdz', 'dwdz', ...
+         'viscu', 'viscv', 'viscw', '-v7.3');
+    
+    % --- E. VORTICITY & JA COMPUTATIONS ---
+    ox = dwdy - dvdz;
+    oy = dudz - dwdx;
+    oz = dvdx - dudy;
+    
+    voz = single(v .* oz);
+    woy = single(wc .* oy);
+    uoy = single(u .* oy);  % Note: 'u' is already correctly u_lab - c
+    vox = single(v .* ox);
+    
+    % JA Fields
+    JAnl   = uphi.*(voz - woy) + wphi.*(uoy - vox);
+    JAconv = uphi.*(   - woy)  + wphi.*(uoy);
+    JAstr  = uphi.*(voz)       + wphi.*(   - vox);
+    JAvisc = uphi.*viscu       + wphi.*viscw;
+    
+    JAnl(isnan(JAnl))     = 0;
     JAvisc(isnan(JAvisc)) = 0;
+    JAconv(isnan(JAconv)) = 0;
+    JAstr(isnan(JAstr))   = 0;
+    JAtot = JAnl + JAvisc;
     
-    save(fnja, 'JAnl', 'JAvisc');
-
-    % --- MEMORY FIX 3: Skip creating JAx and JAz entirely ---
-    % JAin is mathematically equal to JAnl + JAvisc.
-    JAin = JAnl + JAvisc; 
-
-    % Perform spatial averaging
-    JAin = trapz(zz', squeeze(mean(JAin, 2)), 2);
-    JAnlin = trapz(zz', squeeze(mean(JAnl, 2)), 2);
-    JAviscin = trapz(zz', squeeze(mean(JAvisc, 2)), 2);
+    % Save JA Fields
+    fn_jafields = fullfile(baseDir, sprintf('jafields%014d.mat', tstep));
+    save(fn_jafields, 'JAnl', 'JAvisc', 'JAconv', 'JAstr');
     
-    clear JAnl JAvisc % Massive memory dump before integration
+    % --- F. VOLUME INTEGRATIONS ---
+    % Integrate along Z
+    JAin     = trapz(zz, squeeze(mean(JAtot, 2)), 2);
+    JAnlin   = trapz(zz, squeeze(mean(JAnl, 2)), 2);
+    JAviscin = trapz(zz, squeeze(mean(JAvisc, 2)), 2);
+    JAconvin = trapz(zz, squeeze(mean(JAconv, 2)), 2);
+    JAstrin  = trapz(zz, squeeze(mean(JAstr, 2)), 2);
     
-    Jacobian = 1 ./ dZetadz;
-    T = -trapz(X(:,1,1), Jacobian .* JAin);
-    Tnl = -trapz(X(:,1,1), Jacobian .* JAnlin);
-    Tvisc = -trapz(X(:,1,1), Jacobian .* JAviscin);
-phidot = (Jdot(it))*Lx/Ly;
-Ts(it)=T;
-Tnls(it)=Tnl;
-Tviscs(it)=Tvisc;
-phidots(it)=phidot;
-
-    % Clean up remaining loop variables before the next step
-    %clear JAin JAnlin JAviscin Jacobian T Tnl Tvisc
+    % Integrate along X
+    T     = -trapz(X(:, 1, 1), Jac_1D .* JAin);
+    Tnl   = -trapz(X(:, 1, 1), Jac_1D .* JAnlin);
+    Tvisc = -trapz(X(:, 1, 1), Jac_1D .* JAviscin);
+    Tconv = -trapz(X(:, 1, 1), Jac_1D .* JAconvin);
+    Tstr  = -trapz(X(:, 1, 1), Jac_1D .* JAstrin);
     
-    % (Your commented out logic for phidot, Ts, Tnls, etc. remains untouched)
+    % Append to timeseries
+    it = find(abs(t - time) < 1e-6, 1);
+    if ~isempty(it)
+        phidot = Jdot(it) * Lx / Ly;
+        
+        Ts(it)      = T;
+        Tnls(it)    = Tnl;
+        Tviscs(it)  = Tvisc;
+        Tconvs(it)  = Tconv;
+        Tstrs(it)   = Tstr;
+        phidots(it) = phidot;
+        
+        check(it)   = 100 * ((T + phidot) / vol);
+    end
 end
 
-%save('JAseries.mat', 'Ts', 'Tnls', 'Tviscs', 'phidots', 'check')
+% ==========================================
+% 6. FINALIZE & SAVE
+% ==========================================
+mja = fullfile(baseDir, 'JAseries_static.mat');
+save(mja, 'Ts', 'Tnls', 'Tviscs', 'Tconvs', 'Tstrs', 'phidots', 'check');
+fprintf('Unified JA relation script completed and saved.\n');
+
+
+

@@ -1,7 +1,7 @@
 clear
 close all
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run'
-c=8;
+cp=8;
 ak=0.1;
 
 Nx=256;
@@ -17,27 +17,29 @@ zw   = h5read(fname, '/zw');
 pex  = h5read(fname, '/pex');
 pey = h5read(fname, '/pey');
 
+load(fngr)
 k0=wave_n*pex;
 a=ak/k0;
 kx=pex*[0:Nx/2-1,-Nx/2:-1]';
 ky=pey*[0:Ny/2-1,-Ny/2:-1]';
 
 
-load('grid.mat')
 tic
 ret=180;
 nu=1/ret;
 
-tstart=3825000000;
-step =    5000000;
-tend =4620000000;
+tstart=4021250000;
+step  =   1250000;
+tend  =4270000000;
+
 
 for tstep=tstart:step:tend
+%tstep=tstart;
     %fng = sprintf('grid%014d.mat',tstep);
     %fng=fullfile(baseDir,fng);
     %load(fng);
     fn=sprintf('Sol%014d.h5',tstep);
-    fnmat=sprintf('gradflux%014d.mat',tstep);
+    fnmat=sprintf('gradfluxstat%014d.mat',tstep);
     fname = fullfile(baseDir,fn);
     fnamemat=fullfile(baseDir,fnmat);
     % info=h5info(fname)
@@ -49,10 +51,11 @@ for tstep=tstart:step:tend
     w    = h5read(fname, '/w');
     pp   = h5read(fname, '/pp');
     time = h5read(fname, '/time');
-    ct   = c * time;
+    ct   = cp * time;
     kd   = exp((1i*ct).*kx);
+    %numel(kd)
     kdis = reshape(kd, [Nx, 1, 1]);
-    u  = ifft(fft(u, [], 1) .* kdis, [], 1, 'symmetric') - c;
+    u  = ifft(fft(u, [], 1) .* kdis, [], 1, 'symmetric') - cp;
     v  = ifft(fft(v, [], 1) .* kdis, [], 1, 'symmetric');
     toc
     %% interpolate wc to cenn centers
@@ -101,6 +104,7 @@ for tstep=tstart:step:tend
     dvdzeta(:,:,end)=(v(:,:,end)-v(:,:,end-1))./dz(end);
 
     % Reshape dZetadz for proper implicit expansion into 3D
+   numel(dZetadz) 
     dZetadz_3D = reshape(dZetadz, [Nx, 1, 1]);
     dudz = single(dZetadz_3D.*dudzeta);
     dvdz = single(dZetadz_3D.*dvdzeta);

@@ -4,14 +4,14 @@ tic
 %ret=10;
 ret=180;
 nu=1/ret;
-baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
-c=-2;
+% baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+% c=-2;
 %baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
 %c=14;
 %baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
 %c=24;
-%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
-%c=8;
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+c=8;
 
 Nx=256;
 Ny=192;
@@ -31,6 +31,10 @@ load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi','J')
 	vol = trapz(X(:,1,1),Jacobian);
 uphi=uphi./J;
 wphi = wphi./J;
+
+dx=X(4,4,4)-X(3,3,3);
+dy=Y(4,4,4)-Y(3,3,3);
+
 % fup=fft(uphi,[],1);
 % fwp=fft(wphi,[],1);
 % clear uphi wphi
@@ -43,9 +47,13 @@ Tconvs=Ts;
 Tstrs=Ts;
 check=Jdot.*0;
 
-tstart=3825000000;
-step =    5000000;
-tend =4620000000;
+% tstart=3825000000;
+% step =    5000000;
+% tend =4620000000;
+
+tstart=4021250000; 
+step =    1250000;
+tend = 4270000000;
 for tstep=tstart:step:tend
 	fn=sprintf('Sol%014d.h5',tstep);
 	fname = fullfile(baseDir,fn);
@@ -107,36 +115,36 @@ for tstep=tstart:step:tend
 	
     JAin=JAtot;
 	JAin(isnan(JAin))=0;
-	JAin=squeeze(mean(JAin,2));
+	JAin=squeeze(dy*trapz(JAin,2))./Ly;
 	JAin=trapz(zz,JAin,2);
 	
-	JAnlin = squeeze(mean(JAnl,2));
-	JAviscin=squeeze(mean(JAvisc,2));
+	JAnlin = squeeze(dy*trapz(JAnl,2))./Ly;
+	JAviscin=squeeze(dy*trapz(JAvisc,2))./Ly;
 	JAnlin=trapz(zz,JAnlin,2);
 	JAviscin=trapz(zz,JAviscin,2);
 	
-    JAconv = squeeze(mean(JAconv,2));
+    JAconv = squeeze(dy*trapz(JAconv,2))./Ly;
 	JAconv = trapz(zz,JAconv,2);
 	
-    JAstr = squeeze(mean(JAstr,2));
+    JAstr = squeeze(dy*trapz(JAstr,2))./Ly;
 	JAstr = trapz(zz,JAstr,2);
 
 
-	T = -trapz(X(:,1,1),Jacobian.*JAin);
-	Tnl = -trapz(X(:,1,1),Jacobian.*JAnlin);
-	Tvisc = -trapz(X(:,1,1),Jacobian.*JAviscin);
-	Tconv= -trapz(X(:,1,1),Jacobian.*JAconv);
-    Tstr = -trapz(X(:,1,1),Jacobian.*JAstr);
+	T = -trapz(X(:,1,1),Jacobian.*JAin)/J;
+	Tnl = -trapz(X(:,1,1),Jacobian.*JAnlin)/J;
+	Tvisc = -trapz(X(:,1,1),Jacobian.*JAviscin)/J;
+	Tconv= -trapz(X(:,1,1),Jacobian.*JAconv)/J;
+    Tstr = -trapz(X(:,1,1),Jacobian.*JAstr)/J;
 
 	it = find(t ==time)
-	phidot = (Jdot(it))*Lx/Ly;
+	phidot = (Jdot(it))*Lx/J;
 	Ts(it)=T;
 	  Tnls(it)=Tnl;
 	Tviscs(it)=Tvisc;
     Tconvs(it)=Tconv;
      Tstrs(it)=Tstr;
 	phidots(it)=phidot;
-	check(it)=100*((T+phidot)/vol);
+	check(it)=100*(1-(T+phidot)/vol);
 end
 %%
 mja=fullfile(baseDir,'JAseries_statwave.mat')
