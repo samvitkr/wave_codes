@@ -1,10 +1,10 @@
 clear
 close all
-% baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
-load(fullfile(baseDir,'JAseries_static.mat'))
+fign =                     "JAcheck_c8ak1_re180_static.fig";
 
-
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+load(fullfile(baseDir,'JAseries_statwave.mat'))
 Nx=256;
 Ny=192;
 Nz=128;
@@ -17,10 +17,10 @@ Nz=128;
 % step  =   5000000;
 % tend  =4020000000;
 % 
-tstart=4021250000;
+tstart=4300000000;
 step =    1250000;
-tend = 4270000000;
-% 
+tend = 4770000000;
+% % 
 % tstart=3825000000;
 % step =    5000000;
 % tend =4620000000;
@@ -40,7 +40,7 @@ load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi')
 	Jacobian=1./dZetadz;
 	vol = Lx;
 
-figure
+f=figure
 subplot(1,2,1)
 hold on
 plot(t,phidots,'-r')
@@ -49,15 +49,17 @@ plot(t,phidots+Ts,'-k')
 hold off
 yline(vol)
 legend('(L_x/J_*)dJ/dt','T','T + (L_x/J_*)dJ/dt')
+xlabel('time')
+legend boxoff
 subplot(1,2,2)
 hold on
-%plot(Tconvs,':b')
-%plot(Tstrs,'--b')
-% plot(Tnls,'.-b')
-% plot(Tviscs,'-.r')
-% plot(Ts,'-.k')
+
 plot(t,check)
 hold off
+xlabel('time')
+ylabel('%error')
+
+saveas(f,fign);
 
 
 %%

@@ -8,8 +8,8 @@ nu=1/ret;
 % c=-2;
 %baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
 %c=14;
-%baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
-%c=24;
+%baseDir = '/scratch.global/kuma0458/c0ak2_re180/run';
+%c=0;
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 c=8;
 
@@ -51,9 +51,9 @@ check=Jdot.*0;
 % step =    5000000;
 % tend =4620000000;
 
-tstart=4021250000; 
+tstart=4300000000; 
 step =    1250000;
-tend = 4270000000;
+tend = 4770000000;
 for tstep=tstart:step:tend
 	fn=sprintf('Sol%014d.h5',tstep);
 	fname = fullfile(baseDir,fn);

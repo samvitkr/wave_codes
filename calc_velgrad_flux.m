@@ -3,13 +3,13 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-baseDir = '/scratch.global/kuma0458/c0ak2_re180/run'
-%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+%baseDir = '/scratch.global/kuma0458/c0ak2_re180/run'
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 %baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.2;
+ak=0.1;
 wave_n=12;
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn);
@@ -44,18 +44,18 @@ nu=1/ret;
 %step  =    400000;
 %tend  =3578000000;
 
-%tstart=4021250000;
-%step =    1250000;
-%tend = 4270000000;
+tstart=4300000000;
+step =    1250000;
+tend = 4770000000;
 
-tstart=3825000000;
-step =    5000000;
-tend =4620000000;
+%tstart=3825000000;
+%step =    5000000;
+%tend =4620000000;
 
 for tstep=tstart:step:tend
-    %fng = sprintf('grid%014d.mat',tstep);
-    %fng=fullfile(baseDir,fng);
-    %load(fng);
+    fng = sprintf('grid%014d.mat',tstep);
+    fng=fullfile(baseDir,fng);
+    load(fng);
     fn=sprintf('Sol%014d.h5',tstep);
     fnmat=sprintf('gradflux%014d.mat',tstep);
     fname = fullfile(baseDir,fn);
@@ -71,6 +71,8 @@ for tstep=tstart:step:tend
 
     toc
     %% interpolate wc to cenn centers
+
+
     wc=permute(w,[3 1 2]);
     wc=interp1(zw(1:end-1),wc(1:end-1,:,:),zz);
     wc=single(permute(wc,[2 3 1]));
@@ -93,6 +95,8 @@ for tstep=tstart:step:tend
     dvdzeta=zeros(size(u));
     dwdzeta=zeros(size(u));
     dwdzeta(:,:,2:end) = permute(diff(permute(w,[3 2 1]),1,1)./diff(zw),[3 2 1]);
+   
+
     dz=diff(zz);
     dudzeta(:,:,1)=(u(:,:,2)-u(:,:,1))./dz(1);
     dvdzeta(:,:,1)=(v(:,:,2)-v(:,:,1))./dz(1);

@@ -1,8 +1,8 @@
 
 clear
 close all
-% baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
-% c=-2;
+%baseDir = '/scratch.global/kuma0458/c0ak2_re180/run';
+%c=0;
 %baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
 %c=14
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
@@ -25,13 +25,13 @@ c=8;
 %step = 400000;
 %tend=3578000000;
 
-tstart=4021250000;
-step =    1250000;
-tend = 4270000000;
+tstart= 4300000000;
+  step=    1250000;
+ tend = 4770000000;
 
-% tstart=3825000000;
-% step =    5000000;
-% tend =4620000000;
+%tstart=3825000000;
+%step  =   5000000;
+%tend  =4620000000;
 
 load(fullfile(baseDir,'grid.mat'))
 
@@ -63,23 +63,23 @@ for tstep=tstart:step:tend
     time = h5read(fname, '/time');
     ct=c*time;
 
-    % kd = exp((1i*ct).*kx);
-    % kdis = reshape(kd,[Nx,1,1]);
-    % uw = ifft( (fft(u,[],1).*kdis),[],1,'symmetric')-c;
-    % 
-    % uslice = squeeze(dy.*trapz(uw,2));
-    % %udz=sum(uslice(:,2:end).*dzw,2);
-    % udz=trapz(zz,uslice,2);
-    % Jx=udz.*Jacobian;
-    % %J=mean(Jx);
-    % J=(dx.*trapz(Jx));
-     t=[t;time];
-    % flowrate = [flowrate;J];
+     kd = exp((1i*ct).*kx);
+     kdis = reshape(kd,[Nx,1,1]);
+     uw = ifft( (fft(u,[],1).*kdis),[],1,'symmetric')-c;
+     
+     uslice = squeeze(dy.*trapz(uw,2));
+     %udz=sum(uslice(:,2:end).*dzw,2);
+     udz=trapz(zz,uslice,2);
+     Jx=udz.*Jacobian;
+     %J=mean(Jx);
+     J=(dx.*trapz(Jx));
+    t=[t;time];
+     flowrate = [flowrate;J];
 
     %%
-
-fnmat = sprintf('grid%014d.mat',tstep);
-	load( fullfile(baseDir,fnmat),'dZetadz');
+% 
+ fnmat = sprintf('grid%014d.mat',tstep);
+ 	load( fullfile(baseDir,fnmat),'dZetadz');
 Jacobian_lab=1./dZetadz;
 uslicel = squeeze(dy.*trapz(u,2));
     udzl=trapz(zz,uslicel,2);
