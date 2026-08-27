@@ -1,5 +1,5 @@
 clear
-close all
+% close all
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 fign =                     "JAcheck_c8ak1_re180_static.fig";
 
@@ -15,7 +15,7 @@ Nz=128;
 
 % tstart=3025000000;
 % step  =   5000000;
-% tend  =4020000000;
+% % tend  =4020000000;
 % 
 tstart=4300000000;
 step =    1250000;

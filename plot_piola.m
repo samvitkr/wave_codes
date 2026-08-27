@@ -1,4 +1,4 @@
-close all
+%close all
 clear
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 fign =                     'JApiola_c8ak1_re180.fig';

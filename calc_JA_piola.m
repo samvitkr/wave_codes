@@ -15,9 +15,9 @@ Nx      = 256;
 Ny      = 192;
 Nz      = 128;
 
-tstart  = 4021250000;
+tstart  = 4300000000;
 step    =    1250000;
-tend    = 4270000000;
+tend    = 4770000000;
 
 % ==========================================
 % 2. LOAD STATIC GRID DEFINITIONS
@@ -197,8 +197,8 @@ for tstep = tstart:step:tend
     w_wall    = squeeze(mean(wc(:,:,1), 2));
     ax_wall   = squeeze(a_x_3D(:,:,1));
     az_wall   = squeeze(a_z_3D(:,:,1));
-
-    surface_flux = -eta_t .* (ax_wall .* u_wall + az_wall .* w_wall);
+	Vn = -eta_t./(sqrt(1 + eta_x.^2));
+    surface_flux = Vn.* (ax_wall .* u_wall + az_wall .* w_wall);
     T_Vn         = [T_Vn; trapz(x_1d, surface_flux)];
 end
 
