@@ -1,0 +1,6 @@
+add_subdirectory(utils)
+
+add_library(alps_main_wrapper OBJECT alps_main.cpp)
+target_link_libraries(alps_main_wrapper PRIVATE alps_runtime project_warnings)
+target_formatter_setup(alps_main_wrapper)
+target_static_analysis_setup(alps_main_wrapper)

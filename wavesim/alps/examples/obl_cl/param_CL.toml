@@ -1,0 +1,35 @@
+[default_solver]
+# 2D domain decomposition in each direction:
+parallel_decompose = [1, 4]
+# Domain size specified in x-wavenumber pex, y-wavenumber pey and mean depth hbar:
+domain_size = [0.25, 0.5, 1.0]
+# Grid sizes in x, y, z-directions:
+grid_size = [512, 768, 256]
+# Grid stretching coefficient: larger -> more clustered:
+grid_beta = 4.2
+# Grid stretching coefficient: the ratio between the largest and smallest grid:
+grid_gamma = 1.0000
+# Reynolds number:
+Re = 1000.000
+# Time step:
+dt = 4e-5
+# Number of steps to run:
+NStep = 250000
+# Number of steps to save data:
+NOutD = 10000
+# Number of steps to save instantaneous statistics:
+NOutC = 1000000
+# Pressure gradient forcing: positive value is favorable (dp/dx<0)
+BodyForce.PressureGradient = { type = "constant", values = [-1.0, 0.0] }
+# Boundary condition at the top
+BC.top = { type = "TangentialStressWall", tau_1 = 1.0 }
+# Boundary condition at the bottom
+BC.bottom = { type = "GradientWall" }
+# Vortex force
+VortexForce = { StokeDrift = { type = "monochromatic", Us0 = 1.0, k = 1.75 } }
+
+[default_solver.LES]
+# none, ConstantSmagorinsky, CS, DynamicSmagorinsky, DS, AnisotropicMinimumDissipation, AMD
+SGS.model = "amd"
+# Write out Smagorinsky coefficient for debugging
+SGS.debug_Cs = false

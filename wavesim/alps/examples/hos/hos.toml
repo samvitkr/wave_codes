@@ -1,0 +1,14 @@
+[hos_solver]
+parallel_decompose = 1
+grid_size = [128, 64]
+domain_size = [1.0, 1.0]
+order = 3
+Fr2 = 1.0
+We = 0
+dt = 0.1
+NStep = 100
+NOutD = 1000
+NRestart = 50
+smoother = { "type" = "lowpass", "factor" = 0.5 }
+# available integrators: "RK4", "ORK256", "RK46NL", "TSLDDRK74"
+#integrator = "ORK256"

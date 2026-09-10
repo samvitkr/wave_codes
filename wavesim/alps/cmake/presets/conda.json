@@ -1,0 +1,85 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "conda-env",
+      "description": "binutils in the conda environment (rely on CONDA_PREFIX being set)",
+      "hidden": true,
+      "environment": {
+        "CONDA_TOOLCHAIN_HOST": "x86_64-conda-linux-gnu",
+        "CONDA_BUILD_SYSROOT": "$env{CONDA_PREFIX}/$env{CONDA_TOOLCHAIN_HOST}/sysroot",
+        "PATH": "$env{CONDA_PREFIX}/bin:$penv{PATH}",
+        "ADDR2LINE": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-addr2line",
+        "AR": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-ar",
+        "AS": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-as",
+        "CXXFILT": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-c++filt",
+        "ELFEDIT": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-elfedit",
+        "GCC_AR": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-gcc-ar",
+        "GCC_NM": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-gcc-nm",
+        "GCC_RANLIB": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-gcc-ranlib",
+        "LD": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-ld",
+        "NM": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-nm",
+        "OBJCOPY": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-objcopy",
+        "OBJDUMP": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-objdump",
+        "RANLIB": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-ranlib",
+        "READELF": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-readelf",
+        "SIZE": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-size",
+        "STRINGS": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-strings",
+        "STRIP": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-strip",
+        "CFLAGS": "-isystem $env{CONDA_PREFIX}/include",
+        "CPPFLAGS": "-isystem $env{CONDA_PREFIX}/include",
+        "CXXFLAGS": "-isystem $env{CONDA_PREFIX}/include",
+        "LDFLAGS": "-Wl,-rpath,$env{CONDA_PREFIX}/lib -Wl,-rpath-link,$env{CONDA_PREFIX}/lib -L$env{CONDA_PREFIX}/lib",
+        "CUDA_HOME": "$env{CONDA_PREFIX}",
+        "CUDA_PATH": "$env{CONDA_PREFIX}",
+        "CUDAToolkit_ROOT": "$env{CUDA_HOME}",
+        "MPI_HOME": "$env{CONDA_PREFIX}",
+        "MPIEXEC_EXECUTABLE": "$env{CONDA_PREFIX}/bin/mpiexec",
+        "HDF5_ROOT": "$env{CONDA_PREFIX}",
+        "CMAKE_PREFIX_PATH": "$env{CONDA_PREFIX}:$env{CONDA_BUILD_SYSROOT}"
+      },
+      "cacheVariables": {
+        "HDF5_NO_FIND_PACKAGE_CONFIG_FILE": "ON",
+        "CMAKE_FIND_ROOT_PATH_MODE_PROGRAM": "NEVER",
+        "CMAKE_FIND_ROOT_PATH_MODE_LIBRARY": "ONLY",
+        "CMAKE_FIND_ROOT_PATH_MODE_INCLUDE": "ONLY",
+        "CMAKE_FIND_ROOT_PATH_MODE_PACKAGE": "ONLY",
+        "CMAKE_FIND_ROOT_PATH": "$env{CONDA_PREFIX};$env{CONDA_BUILD_SYSROOT}",
+        "CMAKE_INSTALL_PREFIX": "$env{CONDA_PREFIX}",
+        "CMAKE_INSTALL_LIBDIR": "lib",
+        "CMAKE_PROGRAM_PATH": "$env{CONDA_PREFIX}/bin",
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "x86_64"
+      }
+    },
+    {
+      "name": "conda-gcc",
+      "description": "GCC in Conda environment (must be used together with a conda-env preset)",
+      "hidden": true,
+      "environment": {
+        "CXX": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-g++",
+        "CC": "$env{CONDA_PREFIX}/bin/$env{CONDA_TOOLCHAIN_HOST}-gcc"
+      }
+    },
+    {
+      "name": "conda-clang",
+      "description": "Clang in Conda environment (must be used together with a conda-env preset)",
+      "hidden": true,
+      "environment": {
+        "CXX": "$env{CONDA_PREFIX}/bin/clang++",
+        "CC": "$env{CONDA_PREFIX}/bin/clang",
+        "CUDACXX": "$env{CONDA_PREFIX}/bin/clang++"
+      }
+    },
+    {
+      "name": "conda-nvcc",
+      "description": "NVCC in Conda environment (must be used together with a conda-env preset)",
+      "hidden": true,
+      "environment": {
+        "CUDACXX": "$env{CONDA_PREFIX}/bin/nvcc",
+        "CUDAHOSTCXX": "$env{CXX}",
+        "NVCC_CCBIN": "$env{CXX}"
+      }
+    }
+  ]
+}

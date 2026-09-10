@@ -1,0 +1,25 @@
+diff --git a/nvcc_wrapper b/nvcc_wrapper
+--- a/nvcc_wrapper
++++ b/nvcc_wrapper
+@@ -27,6 +27,9 @@ if [ ! -z $CUDA_ROOT ]; then
+   nvcc_compiler="$CUDA_ROOT/bin/nvcc"
+ fi
+ 
++host_compiler=@_cudahostcxx@
++nvcc_compiler=@CMAKE_CUDA_COMPILER@
++
+ #host_compiler="icpc"
+ #host_compiler="/usr/local/gcc/4.8.3/bin/g++"
+ #host_compiler="/usr/local/gcc/4.9.1/bin/g++"
+@@ -466,6 +469,11 @@ do
+     cuda_args="$cuda_args $1 $2"
+     shift
+     ;;
++  #Handle -Xfatbin argument
++  -Xfatbin)
++    cuda_args="$cuda_args -Xfatbin $2"
++    shift
++    ;;
+   #Handle -Xcudafe argument
+   -Xcudafe)
+     cuda_args="$cuda_args -Xcudafe $2"

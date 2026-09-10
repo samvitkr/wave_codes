@@ -1,0 +1,29 @@
+[default_solver]
+# 2D domain decomposition in each direction:
+parallel_decompose = [1, 4]
+# Domain size specified in x-wavenumber pex, y-wavenumber pey and mean depth hbar:
+domain_size = [0.5, 1.0, 2.0]
+# Grid sizes in x, y, z-directions:
+grid_size = [192, 192, 128]
+# Grid stretching coefficient: larger -> more clustered:
+grid_beta = 4.0
+# Grid stretching coefficient: the ratio between the largest and smallest grid:
+grid_gamma = 1.0000
+# Reynolds number:
+Re = 180.000
+# Time step:
+dt = 4e-5
+# Number of steps to run:
+NStep = 250000
+# Max time to run:
+MaxTime = 10000.0
+# Number of steps to save data:
+NOutD = 10000
+# Number of steps to save instantaneous statistics:
+NOutC = 1000000
+# Pressure gradient forcing: positive value is favorable (dp/dx<0)
+BodyForce.PressureGradient = { type = "constant", values = [1.0, 0.0] }
+# Boundary condition at the top
+BC.top = { type = "NoSlipWall" }
+# Boundary condition at the bottom
+BC.bottom = { type = "NoSlipWall" }

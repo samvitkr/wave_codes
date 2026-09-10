@@ -1,0 +1,48 @@
+# 0 initialization, 1 restart:
+restart = 0
+
+[default_solver]
+  # 2D domain decomposition in each direction:
+    parallel_decompose = [1, 1]
+  # Domain size specified in x-wavenumber pex, y-wavenumber pey and mean depth hbar:
+    domain_size =   [0.010472, 0.010472, 150.0]
+  # Grid sizes in x, y, z-directions:
+    grid_size = [256, 8, 642]
+  # Reynolds number:
+    Re =   1000.000
+  # Froude number squared:
+    Fr2 =  0.0004
+  # 1/Weber number:
+    WeR =   0.00000
+  # Time step:
+    dt =  1e-2
+  # Number of steps to run:
+    NStep = 10000
+  # Number of steps to save data:
+    NOutD = 500
+  # Number of steps to save instantaneous statistics:
+    NOutC = 100
+  # Pressure gradient forcing:
+  # Magnitude of pressure body force (positive value is favorable dp/dx<0):
+    # BodyForce.PressureGradient = { type = "constant", values = [1.0, 0.0] }
+    BodyForce.Boussinesq = { scalar_label = "density", Ri = 9.82, theta0 = 1.0 }
+  # Boundary condition at the top: 0 dynamic free-surface:
+    BC.top = { type = "gradientwall" }
+  # Stress stress tangential to the surface in the x-z and y-z plane:
+  # Boundary condition at the bottom: 0 free-slip, 1 no-slip:
+    BC.bottom = { type = "gradientwall" }
+# LES SGS model: 0 No SGS model, 1 Plane-averaged dynamic Smagorinsky, 2 LASD:
+[default_solver.LES]
+  # none, ConstantSmagorinsky, CS, DynamicSmagorinsky, DS, AnisotropicMinimumDissipation, AMD
+    SGS.model = "none"
+  # Write out Smagorinsky coefficient for debugging
+    SGS.debug_Cs = false
+[default_solver.LES.Wallmodel]
+    # Bottom = { type = "loglaw", z0 = 5e-4 }
+#
+[[default_solver.scalars]]
+label = "density"
+Sc = 2.0
+BC.top = { type = "constantflux" }
+BC.bottom = { type = "constantflux" }
+

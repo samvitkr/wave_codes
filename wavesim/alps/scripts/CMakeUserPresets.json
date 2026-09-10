@@ -1,0 +1,75 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "local-cpu",
+      "description": "Local development for CPU",
+      "inherits": [
+        "pixi-toolchain-gcc",
+        "dev-components",
+        "cpu-broadwell"
+      ],
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "environment": {
+        "CPM_SOURCE_CACHE": "$env{HOME}/.cache/cpm"
+      }
+    },
+    {
+      "name": "local-cuda",
+      "description": "Local development for CUDA",
+      "inherits": [
+        "pixi-toolchain-cuda-clang",
+        "dev-components",
+        "cpu-broadwell",
+        "cuda-sm86"
+      ],
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "ALPS_MPI_IS_GPU_AWARE": "OFF"
+      },
+      "environment": {
+        "CPM_SOURCE_CACHE": "$env{HOME}/.cache/cpm"
+      }
+    },
+    {
+      "name": "local-cuda-single",
+      "description": "Local development with single-precision for CUDA",
+      "inherits": ["local-cuda"],
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "ALPS_DEFAULT_SINGLE_PRECISION": "ON"
+      }
+    },
+    {
+      "name": "local-cuda-nvcc-gcc",
+      "description": "Local development with NVCC + GCC for CUDA",
+      "inherits": [
+        "pixi-toolchain-cuda-nvcc-gcc",
+        "dev-components",
+        "cpu-broadwell",
+        "cuda-sm86"
+      ],
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "ALPS_MPI_IS_GPU_AWARE": "OFF"
+      },
+      "environment": {
+        "CPM_SOURCE_CACHE": "$env{HOME}/.cache/cpm"
+      }
+    },
+    {
+      "name": "local-hip",
+      "description": "Local development for HIP",
+      "inherits": [
+        "pixi-toolchain-rocm",
+        "dev-components",
+        "cpu-broadwell",
+        "amd-gfx90a"
+      ],
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "environment": {
+        "CPM_SOURCE_CACHE": "$env{HOME}/.cache/cpm"
+      }
+    }
+  ]
+}

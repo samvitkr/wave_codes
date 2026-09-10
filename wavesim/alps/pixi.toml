@@ -1,0 +1,72 @@
+[workspace]
+name = "alps"
+description = "Accelerated Pesudo-Spectral Solver"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+exclude-newer = "14d"
+
+[dependencies]
+python = "3.13*"
+binutils = "*"
+gxx = ">=10.4, <11"
+clangdev = { version = "==21.1.8", build-number = "2" }
+llvm-openmp = "==21.1.8"
+openmpi = ">=4, <5"
+hdf5 = { version = "~=1.14.3", build = "mpi_openmpi_*" }
+fftw = { version = ">=3, <4", build = "nompi_*" }
+ninja = "*"
+cmake = "3.29.*"
+git = ">=2.47, <3"
+cmakelang = "0.6.*"
+
+[feature.cuda-12_2]
+channels = ["nvidia/label/cuda-12.2.2"]
+system-requirements.cuda = "12"
+
+[feature.cuda-12_2.dependencies]
+# granular dependencies to exclude GUI tools such as nsight
+cuda-runtime = "*"
+cuda-compiler = "*"
+cuda-libraries-dev = "*"
+cuda-libraries-static = "*"
+cuda-nvml-dev = "*"
+cuda-command-line-tools = "*"
+gds-tools = "*"
+
+[feature.cuda-12_2.activation.env]
+CUDA_HOME = "$CONDA_PREFIX"
+CUDA_PATH = "$CONDA_PREFIX"
+CUDAToolkit_ROOT = "$CONDA_PREFIX"
+OMPI_MCA_opal_cuda_support = "1"
+
+[activation.env]
+CMAKE_PREFIX_PATH = "$CONDA_PREFIX"
+
+[environments]
+cuda = ["cuda-12_2"]
+
+[tasks]
+cmake-fmt = { cmd = "./scripts/cmake_format.sh", description = "Format CMake files" }
+
+[tasks._check-env]
+cmd = "{{ 'echo Error: CUDA preset selected but CUDA environment not specified; exit 1' if ('cuda' in preset and 'cuda' not in pixi.environment.name) else 'exit 0' }}"
+args = ["preset"]
+description = "Check if the CUDA environment is active when a CUDA preset is selected"
+
+[tasks.configure]
+cmd = "cmake -S . --preset {{preset}}"
+args = ["preset"]
+depends-on = [{ task = "_check-env", args = ["{{preset}}"] }]
+description = "CMake configure with the specified preset"
+
+[tasks.build]
+cmd = "cmake --build build-{{preset}} --target {{targets}}"
+args = ["preset", { arg = "targets", default = "all" }]
+depends-on = [{ task = "_check-env", args = ["{{preset}}"] }]
+description = "Build the specified targets with the specified preset"
+
+[tasks.test]
+cmd = "ctest --test-dir build-{{preset}} --output-on-failure -R {{test_regex}}"
+args = ["preset", { arg = "test_regex", default = ".*" }]
+depends-on = [{ task = "_check-env", args = ["{{preset}}"] }]
+description = "Run tests matching the regex with the specified preset"

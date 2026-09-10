@@ -1,0 +1,218 @@
+# This is a Spack Environment file.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+spack:
+  # add package specs to the `specs` list
+  specs:
+    - gcc@11.3
+    - ucx@1.18+thread_multiple+cma+cuda+verbs+rdmacm+dc+rc+ud+dm+ib_hw_tm+mlx5_dv+xpmem~examples
+    - openmpi@4+cuda+internal-hwloc+internal-pmix+internal-libevent+orterunprefix+pmi+legacylaunchers fabrics=ucx,cma,xpmem ^cuda@12
+    - fftw~mpi
+    - hdf5+mpi+fortran ^pkgconfig=pkgconf
+  view: true
+  concretizer:
+    unify: true
+  config:
+    install_tree:
+      root: ${MSIPROJECT}/shared/opt/spack/opt
+    build_stage:
+      # Build should happen on the compute node
+      - /dev/shm/$user
+      - $tempdir/$user/spack-stage
+      - ~/.spack/stage
+  modules:
+    default:
+      roots:
+        tcl: ${MSIPROJECT}/shared/opt/spack/share/modules
+        lmod: ${MSIPROJECT}/shared/opt/spack/share/lmod
+      enable: [tcl]
+      tcl:
+        all:
+          autoload: all
+        openmpi:
+          environment:
+            set:
+              OMPI_MCA_opal_warn_on_missing_libcuda: "0"
+              SLURM_MPI_TYPE: "pmi2"
+        gcc@11.3.0:
+          load: ["gcc/11.3.0"]
+          filter:
+            # environment variables are handled by external module
+            exclude_env_vars: ["PATH", "MANPATH", "CMAKE_PREFIX_PATH"]
+        gcc@9.2.0:
+          load: ["gcc/9.2.0"]
+        cuda@12.4:
+          environment:
+            prepend_path:
+              LD_LIBRARY_PATH: "{prefix}/lib64:{prefix}/extras/CUPTI/lib64:{prefix}/../../math_libs/12.4/lib64"
+              CPATH: "{prefix}/../../math_libs/12.4/include"
+        cuda@12.0:
+          load: ["cuda/12.0"]
+          filter:
+            # environment variables are handled by external module
+            exclude_env_vars: ["PATH", "MANPATH"]
+        cuda@11.2:
+          load: ["cuda/11.2"]
+          filter:
+            # environment variables are handled by external module
+            exclude_env_vars: ["PATH", "MANPATH"]
+  packages:
+    gcc:
+      externals:
+        - spec: gcc@11.3.0 languages='c,c++,fortran'
+          prefix: /common/software/install/migrated/gcc/11.3.0
+          modules: [gcc/11.3.0]
+          extra_attributes:
+            compilers:
+              c: /common/software/install/migrated/gcc/11.3.0/bin/gcc
+              cxx: /common/software/install/migrated/gcc/11.3.0/bin/g++
+              fortran: /common/software/install/migrated/gcc/11.3.0/bin/gfortran
+        - spec: gcc@9.2.0 languages='c,c++,fortran'
+          prefix: /common/software/install/migrated/gcc/9.2.0
+          modules: [gcc/9.2.0]
+          extra_attributes:
+            compilers:
+              c: /common/software/install/migrated/gcc/9.2.0/bin/gcc
+              cxx: /common/software/install/migrated/gcc/9.2.0/bin/g++
+              fortran: /common/software/install/migrated/gcc/9.2.0/bin/gfortran
+        - spec: gcc@8.5.0 languages='c,c++,fortran'
+          prefix: /usr
+          extra_attributes:
+            compilers:
+              c: /usr/bin/gcc
+              cxx: /usr/bin/g++
+              fortran: /usr/bin/gfortran
+      buildable: false
+    cuda:
+      externals:
+        - spec: cuda@12.0.76
+          prefix: /common/software/install/manual/cuda/12.0
+          modules: [cuda/12.0]
+        - spec: cuda@12.4.131
+          prefix: /common/software/install/manual/nvidia-hpc-toolkit/24.5/Linux_x86_64/24.5/cuda/12.4
+        - spec: cuda@11.2.67
+          prefix: /common/software/install/migrated/cuda/11.2
+          modules: [cuda/11.2]
+      buildable: false
+    libtool:
+      externals:
+        - spec: libtool@2.4.6
+          prefix: /usr
+      buildable: false
+    openssl:
+      externals:
+        - spec: openssl@1.1.1k
+          prefix: /usr
+      buildable: false
+    yacc:
+      buildable: false
+    diffutils:
+      externals:
+        - spec: diffutils@3.6
+          prefix: /usr
+      buildable: false
+    krb5:
+      externals:
+        - spec: krb5@1.18.2
+          prefix: /usr
+      buildable: false
+    bison:
+      externals:
+        - spec: bison@3.0.4
+          prefix: /usr
+      buildable: false
+    openssh:
+      externals:
+        - spec: openssh@8.0p1
+          prefix: /usr
+      buildable: false
+    bzip2:
+      externals:
+        - spec: bzip2@1.0.6
+          prefix: /usr
+      buildable: false
+    gettext:
+      externals:
+        - spec: gettext@0.19.8.1
+          prefix: /usr
+      buildable: false
+    automake:
+      externals:
+        - spec: automake@1.16.1
+          prefix: /usr
+      buildable: false
+    autoconf:
+      externals:
+        - spec: autoconf@2.69
+          prefix: /usr
+      buildable: false
+    perl:
+      externals:
+        - spec: perl@5.26.3~cpanm+opcode~open+shared+threads
+          prefix: /usr
+      buildable: false
+    opencl:
+      buildable: false
+    curl:
+      externals:
+        - spec: curl@7.61.1+gssapi+nghttp2
+          prefix: /usr
+      buildable: false
+    tar:
+      externals:
+        - spec: tar@1.30
+          prefix: /usr
+      buildable: false
+    zlib-api:
+      buildable: false
+    zlib:
+      externals:
+        - spec: zlib@1.2.11
+          prefix: /usr
+      buildable: false
+    xz:
+      externals:
+        - spec: xz@5.2.4
+          prefix: /usr
+      buildable: false
+    rdma-core:
+      externals:
+        - spec: rdma-core@54.0
+          prefix: /usr
+      buildable: false
+    xpmem:
+      externals:
+        - spec: xpmem@2.7.4
+          prefix: /usr
+      buildable: false
+    ncurses:
+      externals:
+        - spec: ncurses@6.1.20180224+termlib abi=6
+          prefix: /usr
+      buildable: false
+    m4:
+      externals:
+        - spec: m4@1.4.18
+          prefix: /usr
+      buildable: false
+    cmake:
+      externals:
+        - spec: cmake@3.26.5
+          prefix: /usr
+      buildable: false
+    pkgconf:
+      externals:
+        - spec: pkgconf@1.4.2
+          prefix: /usr
+      buildable: false
+    gmake:
+      externals:
+        - spec: gmake@4.2.1
+          prefix: /usr
+      buildable: false
+    all:
+      prefer:
+        - "%gcc@11"
+      target: [x86_64_v3]
+

@@ -1,0 +1,74 @@
+{
+  "version": 4,
+  "include": ["conda.json"],
+  "configurePresets": [
+    {
+      "name": "pixi-toolchain-gcc",
+      "description": "GCC toolchain in Pixi default environment (CPU only)",
+      "hidden": true,
+      "inherits": ["conda-gcc", "conda-env"],
+      "environment": {
+        "CONDA_PREFIX": "${sourceDir}/.pixi/envs/default"
+      },
+      "generator": "Ninja"
+    },
+    {
+      "name": "pixi-toolchain-clang",
+      "description": "Clang toolchain in Pixi default environment (CPU only)",
+      "hidden": true,
+      "inherits": ["conda-clang", "conda-env"],
+      "environment": {
+        "CONDA_PREFIX": "${sourceDir}/.pixi/envs/default"
+      },
+      "generator": "Ninja"
+    },
+    {
+      "name": "pixi-toolchain-cuda-nvcc-gcc",
+      "description": "NVCC + GCC toolchain in Pixi cuda environment",
+      "hidden": true,
+      "inherits": ["conda-nvcc", "conda-gcc", "conda-env"],
+      "environment": {
+        "CONDA_PREFIX": "${sourceDir}/.pixi/envs/cuda"
+      },
+      "generator": "Ninja"
+    },
+    {
+      "name": "pixi-toolchain-cuda-nvcc-clang",
+      "description": "NVCC + Clang toolchain in Pixi cuda environment",
+      "hidden": true,
+      "inherits": ["conda-nvcc", "conda-clang", "conda-env"],
+      "environment": {
+        "CONDA_PREFIX": "${sourceDir}/.pixi/envs/cuda"
+      },
+      "generator": "Ninja"
+    },
+    {
+      "name": "pixi-toolchain-cuda-clang",
+      "description": "Clang toolchain in Pixi cuda environment",
+      "hidden": true,
+      "inherits": ["conda-clang", "conda-env"],
+      "environment": {
+        "CONDA_PREFIX": "${sourceDir}/.pixi/envs/cuda"
+      },
+      "generator": "Ninja"
+    },
+    {
+      "name": "pixi-toolchain-rocm",
+      "description": "ROCM compilers (amdclang++ and amdclang) with toolchains in Pixi default environment",
+      "hidden": true,
+      "inherits": ["conda-env"],
+      "environment": {
+        "CONDA_PREFIX": "${sourceDir}/.pixi/envs/default",
+        "CXX": "$env{ROCM_PATH}/lib/llvm/bin/amdclang++",
+        "CC": "$env{ROCM_PATH}/lib/llvm/bin/amdclang"
+      },
+      "cacheVariables": {
+        "CMAKE_C_FLAGS_INIT": "--sysroot=$env{CONDA_BUILD_SYSROOT} --gcc-install-dir=$env{CONDA_PREFIX}/lib/gcc/x86_64-conda-linux-gnu/10.4.0",
+        "CMAKE_CXX_FLAGS_INIT": "--sysroot=$env{CONDA_BUILD_SYSROOT} --gcc-install-dir=$env{CONDA_PREFIX}/lib/gcc/x86_64-conda-linux-gnu/10.4.0",
+        "CMAKE_FIND_ROOT_PATH_MODE_LIBRARY": "BOTH",
+        "CMAKE_FIND_ROOT_PATH_MODE_INCLUDE": "BOTH"
+      },
+      "generator": "Ninja"
+    }
+  ]
+}

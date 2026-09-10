@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakePythonSetting">
+    <option name="pythonIntegrationState" value="YES" />
+  </component>
+  <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CidrRootsConfiguration">
+    <libraryRoots>
+      <file path="$PROJECT_DIR$/build_cpu_gcc/_deps" />
+      <file path="$PROJECT_DIR$/build_cuda_clang-custom/_deps" />
+      <file path="$PROJECT_DIR$/build_cuda_nvcc/_deps" />
+      <file path="$PROJECT_DIR$/thirdparty/VkFFT" />
+      <file path="$PROJECT_DIR$/thirdparty/cmake-git-version-tracking" />
+      <file path="$PROJECT_DIR$/thirdparty/enum" />
+      <file path="$PROJECT_DIR$/thirdparty/kokkos" />
+    </libraryRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/.cache" />
+      <file path="$PROJECT_DIR$/build_cpu_gcc/test_cases" />
+      <file path="$PROJECT_DIR$/build_cuda_clang/test_cases" />
+      <file path="$PROJECT_DIR$/build_cuda_nvcc" />
+      <file path="$PROJECT_DIR$/build_cuda_nvcc/test_cases" />
+      <file path="$PROJECT_DIR$/docs/.venv" />
+      <file path="$PROJECT_DIR$/docs/_build" />
+      <file path="$PROJECT_DIR$/docs/_doxygen" />
+      <file path="$PROJECT_DIR$/docs/api" />
+    </excludeRoots>
+  </component>
+</project>

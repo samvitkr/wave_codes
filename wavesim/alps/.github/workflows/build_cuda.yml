@@ -1,0 +1,179 @@
+name: Compiler compatibility test (CUDA)
+
+env:
+  CCACHE_VERSION: 4.12.2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'releases/**'
+    paths: &common_paths
+      - "**" # include all files
+      - "!.devcontainer/**"
+      - "!.idea/**"
+      - "!.vscode/**"
+      - "!docs/**"
+      - "!scripts/**"
+      - "!tools/**"
+      - "!**.md" # exclude all markdown files
+      - "!.git*" # exclude git related files in root
+      - "!*.yaml" # exclude yaml files in root
+      - "!*.yml" # exclude yml files in root
+      - "!.clang-*" # exclude clang related files in root
+      - "!pixi.toml"
+      - "!pixi.lock"
+      - "!.github/workflows/*.yml"
+      - ".github/workflows/build_cuda.yml" # only trigger on changes to this workflow
+  pull_request:
+    paths: *common_paths
+
+concurrency:
+  group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - type: nvcc
+            version: 11.6
+            image: nvidia/cuda:11.6.1-devel-rockylinux8
+            cmake_version: 3.23.5
+          - type: nvcc
+            version: 12.2
+            image: nvidia/cuda:12.2.0-devel-rockylinux9
+            cmake_version: 3.26.6
+          - type: nvcc
+            version: 13.0
+            image: nvidia/cuda:13.0.1-devel-rockylinux10
+            cmake_version: 3.30.9
+        include:
+          - common_system_packages: hdf5-openmpi-devel fftw-devel unzip xz git patch
+            CC: /usr/bin/gcc
+            CXX: /usr/bin/g++
+            MPI_HOME: /usr/lib64/openmpi
+            HDF5_ROOT: /usr/lib64/openmpi;/usr/include/openmpi-x86_64
+            default_cmake_version: 3.29.6
+            cmake_additional_flags: -DALPS_ARCH_BDW=ON
+
+    name: ${{ matrix.toolchain.type }}-${{ matrix.toolchain.version }}
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+      MPI_HOME: ${{ matrix.MPI_HOME }}
+      HDF5_ROOT: ${{ matrix.HDF5_ROOT }}
+      CCACHE_MAXSIZE: 200M
+
+    runs-on: ubuntu-24.04
+    container:
+      image: ${{ matrix.toolchain.image }}
+    steps:
+      - name: Get a UTC timestamp
+        id: timestamp
+        run: echo "timestamp=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
+      - name: Install node (workaround for executing actions in act)
+        if: ${{ env.ACT }}
+        run: curl -fsSL https://rpm.nodesource.com/setup_20.x | bash && dnf install -y nodejs
+
+      - name: Install system packages
+        run: |
+          dnf install -y dnf-plugins-core
+          dnf config-manager --set-enabled ${{ endsWith(matrix.toolchain.image, 'linux8') && 'powertools' || 'crb' }}
+          dnf install -y epel-release
+          dnf install -y ${{ matrix.common_system_packages }} ${{ matrix.toolchain.system_packages || '' }}
+          dnf clean all
+          echo "${MPI_HOME}/bin" >> $GITHUB_PATH
+
+      - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: ${{ matrix.toolchain.cmake_version || matrix.default_cmake_version }}
+          ninjaVersion: latest
+          useCloudCache: false
+          useLocalCache: false
+
+      - name: Install ccache
+        run: |
+          mkdir -p ${HOME}/ccache
+          curl -sSL -o ccache.tar.xz https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}-linux-x86_64.tar.xz
+          tar -xf ccache.tar.xz -C ${HOME}/ccache --strip-components=1
+          rm ccache.tar.xz
+          ${HOME}/ccache/ccache --version
+          echo "${HOME}/ccache" >> $GITHUB_PATH
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+          path: source
+
+      - name: Set up the environment variables for source and build directories
+        run: |
+          echo "SRC_DIR=${GITHUB_WORKSPACE}/source" >> $GITHUB_ENV
+          echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
+          echo "${GITHUB_WORKSPACE}/source/.github/scripts" >> $GITHUB_PATH
+
+      - name: Set up CPM source cache
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/cpm_cache
+          echo "CPM_SOURCE_CACHE=${GITHUB_WORKSPACE}/cpm_cache" >> $GITHUB_ENV
+
+      - name: Set up ccache directory
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/.ccache
+          echo "CCACHE_DIR=${GITHUB_WORKSPACE}/.ccache" >> $GITHUB_ENV
+
+      - name: Set ccache for nvcc wrapper
+        if: ${{ matrix.toolchain.type == 'nvcc' }}
+        run: |
+          : > ${GITHUB_WORKSPACE}/ccache.conf
+          echo "compiler_check = %compiler% --version" >> ${GITHUB_WORKSPACE}/ccache.conf
+          echo "CCACHE_CONFIGPATH=${GITHUB_WORKSPACE}/ccache.conf" >> $GITHUB_ENV
+
+      - name: Restore/save compilation artifacts
+        uses: actions/cache@v5
+        if: ${{ !env.ACT }}
+        with:
+          path: .ccache
+          key: ${{ matrix.toolchain.type }}-${{ matrix.toolchain.version }}-ccache-${{ steps.timestamp.outputs.timestamp }}
+          restore-keys: ${{ matrix.toolchain.type }}-${{ matrix.toolchain.version }}-ccache-
+
+      - name: Build default
+        run: |
+          echo "### Build default configuration" >> "$GITHUB_STEP_SUMMARY"
+          echo '#### Configure warnings and errors' >> "$GITHUB_STEP_SUMMARY"
+          run_with_stderr_summary.sh \
+            cmake -S ${SRC_DIR} -B ${BUILD_DIR} --preset=ci-build-cuda ${{ matrix.cmake_additional_flags || '' }}
+          echo '#### Build warnings and errors' >> "$GITHUB_STEP_SUMMARY"
+          run_build_with_summary.sh cmake --build ${BUILD_DIR}
+          rm -rf ${BUILD_DIR}
+
+      - name: Build GPU-aware MPI Off
+        run: |
+          echo "### Build GPU-aware MPI Off configuration" >> "$GITHUB_STEP_SUMMARY"
+          echo '#### Configure warnings and errors' >> "$GITHUB_STEP_SUMMARY"
+          run_with_stderr_summary.sh \
+            cmake -S ${SRC_DIR} -B ${BUILD_DIR} --preset=ci-build-cuda -DALPS_MPI_IS_GPU_AWARE=OFF ${{ matrix.cmake_additional_flags || '' }}
+          echo '#### Build warnings and errors' >> "$GITHUB_STEP_SUMMARY"
+          run_build_with_summary.sh cmake --build ${BUILD_DIR}
+          rm -rf ${BUILD_DIR}
+
+      - name: Build single precision
+        run: |
+          echo "### Build single precision configuration" >> "$GITHUB_STEP_SUMMARY"
+          echo '#### Configure warnings and errors' >> "$GITHUB_STEP_SUMMARY"
+          run_with_stderr_summary.sh \
+            cmake -S ${SRC_DIR} -B ${BUILD_DIR} --preset=ci-build-cuda -DALPS_DEFAULT_SINGLE_PRECISION=ON ${{ matrix.cmake_additional_flags || '' }}
+          echo '#### Build warnings and errors' >> "$GITHUB_STEP_SUMMARY"
+          run_build_with_summary.sh cmake --build ${BUILD_DIR}
+          rm -rf ${BUILD_DIR}
+
+      - name: Stats of ccache
+        run: |
+          echo "### Stats of ccache" >> "$GITHUB_STEP_SUMMARY"
+          run_build_with_summary.sh ccache -sv
+          ccache -z

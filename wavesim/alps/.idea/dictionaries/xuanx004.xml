@@ -1,0 +1,23 @@
+<component name="ProjectDictionaryState">
+  <dictionary name="xuanx004">
+    <words>
+      <w>CUFFT</w>
+      <w>VKFFT</w>
+      <w>allreduce</w>
+      <w>bashforth</w>
+      <w>cmplx</w>
+      <w>coeff</w>
+      <w>cxxopts</w>
+      <w>dealias</w>
+      <w>decomp</w>
+      <w>fftw</w>
+      <w>fftwf</w>
+      <w>mpipp</w>
+      <w>recv</w>
+      <w>sendrecv</w>
+      <w>smagorinsky</w>
+      <w>spdlog</w>
+      <w>wavenumber</w>
+    </words>
+  </dictionary>
+</component>

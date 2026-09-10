@@ -1,0 +1,89 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Data
+*.h5
+
+# Python byte-compiled / optimized / DLL files / packaging
+__pycache__/
+*.py[codz]
+*$py.class
+*.egg-info/
+
+# Sphinx documentation
+docs/_build/
+docs/_doxygen
+docs/api/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Julia
+LocalPreferences.toml
+JuliaLocalPreferences.toml
+
+# Environments
+.env
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pixi
+node_modules/
+
+*build*/*
+.clangd
+.cache
+compile_commands.json
+/CMakeUserPresets.json
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+.idea/copilot.data.migration*.xml
+
+.kilo*
+.kilocode/*
+.sisyphus/*
+!.sisyphus/rules/

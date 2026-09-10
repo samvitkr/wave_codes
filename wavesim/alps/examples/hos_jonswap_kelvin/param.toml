@@ -1,0 +1,23 @@
+[hos_solver]
+Fr2 = 0.1019367992
+NOutC = 100
+NOutD = 20
+NRestart = 200000
+NStep = 8000
+We = 14.0
+domain_size = [0.0104719755, 0.0125663706]
+dt = 0.01000000000000000
+grid_size = [1536, 1280]
+order = 4
+parallel_decompose = 1
+smoother = { factor = 0.5, type = 'lowpass' }
+
+[pressure_impulse]
+# (x0, y0) as the ratio of Lx, Ly
+x0 = [0.25, 0.5]
+# radius of the pressure impulse
+R = 7.5
+# magnitude of the pressure impulse
+p0 = 2.5
+# speed of the pressure impulse
+U = 4.5

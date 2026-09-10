@@ -1,0 +1,12 @@
+diff --git a/include/fmt/format.h b/include/fmt/format.h
+--- a/include/fmt/format.h
++++ b/include/fmt/format.h
+@@ -2667,7 +2667,7 @@ class bigint {
+   using double_bigit = uint64_t;
+   enum { bigit_bits = num_bits<bigit>() };
+   enum { bigits_capacity = 32 };
+-  basic_memory_buffer<bigit, bigits_capacity> bigits_;
++  basic_memory_buffer<bigit, bigits_capacity> bigits_{};
+   int exp_;
+ 
+   friend struct formatter<bigint>;

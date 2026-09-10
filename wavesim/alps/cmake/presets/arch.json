@@ -1,0 +1,92 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "cuda-sm90",
+      "displayName": "NVIDIA CUDA SM90",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ENABLE_CUDA": "ON",
+        "ALPS_ARCH_HOPPER90": "ON"
+      }
+    },
+    {
+      "name": "cuda-sm89",
+      "displayName": "NVIDIA CUDA SM89",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ENABLE_CUDA": "ON",
+        "ALPS_ARCH_ADA89": "ON"
+      }
+    },
+    {
+      "name": "cuda-sm80",
+      "displayName": "NVIDIA CUDA SM80",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ENABLE_CUDA": "ON",
+        "ALPS_ARCH_AMPERE80": "ON"
+      }
+    },
+    {
+      "name": "cuda-sm86",
+      "displayName": "NVIDIA CUDA SM86",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ENABLE_CUDA": "ON",
+        "ALPS_ARCH_AMPERE86": "ON"
+      }
+    },
+    {
+      "name": "cuda-sm70",
+      "displayName": "NVIDIA CUDA SM70",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ENABLE_CUDA": "ON",
+        "ALPS_ARCH_VOLTA70": "ON"
+      }
+    },
+    {
+      "name": "amd-gfx90a",
+      "displayName": "AMD MI200 series (gfx90a)",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ENABLE_HIP": "ON",
+        "ALPS_ARCH_AMD_GFX90A": "ON",
+        "AMDGPU_TARGETS": "gfx90a"
+      }
+    },
+    {
+      "name": "cpu-native",
+      "displayName": "Native CPU architecture",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ARCH_NATIVE": "ON"
+      }
+    },
+    {
+      "name": "cpu-broadwell",
+      "displayName": "Broadwell/x86-64",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ARCH_BDW": "ON"
+      }
+    },
+    {
+      "name": "cpu-zen2",
+      "displayName": "AMD Zen2 architecture",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ARCH_ZEN2": "ON"
+      }
+    },
+    {
+      "name": "cpu-zen3",
+      "displayName": "AMD Zen3 architecture",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_ARCH_ZEN3": "ON"
+      }
+    }
+  ]
+}

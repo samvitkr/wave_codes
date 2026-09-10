@@ -1,0 +1,7 @@
+add_subdirectory(channel)
+add_subdirectory(wind_wave)
+add_subdirectory(obl_cl)
+add_subdirectory(hos)
+add_subdirectory(hos_jonswap_kelvin)
+add_subdirectory(free_surface)
+add_subdirectory(radiant)

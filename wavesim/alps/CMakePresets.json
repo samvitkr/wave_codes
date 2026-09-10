@@ -1,0 +1,106 @@
+{
+  "version": 4,
+  "include": [
+    "cmake/presets/toolchain.json",
+    "cmake/presets/arch.json"
+  ],
+  "configurePresets": [
+    {
+      "name": "nautilus-a100",
+      "displayName": "Nautilus A100",
+      "description": "Nautilus A100 with system GCC (8.5) and CUDA 11.6",
+      "inherits": ["cpu-native", "cuda-sm80"],
+      "cacheVariables": {
+        "FFTW_ROOT": "$env{AOCL_HOME}"
+      }
+    },
+    {
+      "name": "narwhal-v100",
+      "displayName": "Narwhal V100",
+      "description": "Narwhal V100 with GCC 11.2 and CUDA 11.8",
+      "inherits": ["cpu-native", "cuda-sm70"],
+      "cacheVariables": {
+        "CMAKE_CUDA_COMPILER": "$env{CUDA_HOME}/bin/nvcc",
+        "CUDAToolkit_ROOT": "$env{CUDA_HOME}"
+      }
+    },
+    {
+      "name": "msi-h100",
+      "displayName": "MSI H100",
+      "description": "MSI H100",
+      "inherits": ["cuda-sm90"]
+    },
+    {
+      "name": "msi-a100",
+      "displayName": "MSI A100",
+      "description": "MSI A100",
+      "inherits": ["cuda-sm80"]
+    },
+    {
+      "name": "msi-a40",
+      "displayName": "MSI A40",
+      "description": "MSI A40",
+      "inherits": ["cuda-sm86"]
+    },
+    {
+      "name": "msi-v100",
+      "displayName": "MSI V100",
+      "description": "MSI V100",
+      "inherits": ["cuda-sm70"]
+    },
+    {
+      "name": "ruth-mi250",
+      "displayName": "Ruth MI250X",
+      "description": "Ruth MI250X",
+      "inherits": ["cpu-zen3", "amd-gfx90a"],
+      "environment": {
+        "ROCM_PATH": "$penv{ROCM_COMPILER_PATH}/.."
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "amdclang",
+        "CMAKE_CXX_COMPILER": "amdclang++",
+        "FFTW_ROOT": "/opt/cray/pe/fftw/default/x86_milan"
+      }
+    },
+    {
+      "name": "dev-components",
+      "description": "Enable development components including tests and benchmarks",
+      "hidden": true,
+      "cacheVariables": {
+        "ALPS_BUILD_TESTS": "ON",
+        "ALPS_BUILD_BENCHMARKS": "ON",
+        "ALPS_ENABLE_CLANG_FORMAT": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "ci-build",
+      "description": "Continuous integration build",
+      "generator": "Ninja",
+      "inherits": ["dev-components"],
+      "cacheVariables": {
+        "ALPS_ENABLE_CLANG_FORMAT": "OFF",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
+      "name": "ci-build-cuda",
+      "description": "Continuous integration build with CUDA",
+      "inherits": ["ci-build", "cuda-sm80"]
+    },
+    {
+      "name": "ci-build-rocm",
+      "description": "Continuous integration build with ROCM",
+      "inherits": ["ci-build", "amd-gfx90a"],
+      "environment": {
+        "ROCM_PATH": "/opt/rocm"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "amdclang",
+        "CMAKE_CXX_COMPILER": "amdclang++",
+        "AMDGPU_TARGETS": "gfx90a"
+      }
+    }
+  ]
+}
