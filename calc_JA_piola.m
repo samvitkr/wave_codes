@@ -189,17 +189,34 @@ for tstep = tstart:step:tend
     % Integral 3: Vorticity Flux (a * R)[cite: 9]
     aR_field = a_x_3D .* R_x + a_z_3D .* R_z;
     aR_mean  = squeeze(mean(aR_field, 2));
-    T_R      = [T_R; trapz(x_1d, Jac_1D .* trapz(zz, aR_mean, 2))];
+    T_R      = [T_R; dx*sum( Jac_1D .* trapz(zz, aR_mean, 2))];
 
     % Integral 4: Moving Surface Flux (Vn a * u)[cite: 9]
     % V_n dS = -\eta_t dx dy[cite: 9]
-    u_wall    = squeeze(mean(u(:,:,1), 2));
-    w_wall    = squeeze(mean(wc(:,:,1), 2));
-    ax_wall   = squeeze(a_x_3D(:,:,1));
-    az_wall   = squeeze(a_z_3D(:,:,1));
-	Vn = -eta_t./(sqrt(1 + eta_x.^2));
-    surface_flux = Vn.* (ax_wall .* u_wall + az_wall .* w_wall);
-    T_Vn         = [T_Vn; trapz(x_1d, surface_flux)];
+    
+    %u_wall    = squeeze(mean(u(:,:,1), 2));
+    %w_wall    = squeeze(mean(wc(:,:,1), 2));
+    %ax_wall   = squeeze(a_x_3D(:,:,1));
+    %az_wall   = squeeze(a_z_3D(:,:,1));
+	%Vn = -eta_t./(sqrt(1 + eta_x.^2));
+    %surface_flux = Vn.* (ax_wall .* u_wall + az_wall .* w_wall);
+    
+	% Prescribed air-side wall velocity
+	u_wall = eps_w * c * cos(theta);
+	w_wall = eps_w * c * sin(theta);
+	
+	% Piola carrier exactly on z = eta
+	ax_wall = H ./ d_gap;
+	az_wall = H .* eta_x ./ d_gap;
+	
+	a_dot_u_wall = ax_wall .* u_wall + az_wall .* w_wall;
+	
+	% Vn*dS = -eta_t dx dy.
+	% With the spanwise average used everywhere else, this is per unit span.
+	dx = Lx / Nx;
+	surface_flux = dx * sum(-eta_t .* a_dot_u_wall);
+	
+	T_Vn         = [T_Vn; surface_flux];
 end
 
 % ==========================================

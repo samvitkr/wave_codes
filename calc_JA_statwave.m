@@ -4,14 +4,14 @@ tic
 %ret=10;
 ret=180;
 nu=1/ret;
-% baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
-% c=-2;
+%baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+%c=-2;
 %baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
 %c=14;
-%baseDir = '/scratch.global/kuma0458/c0ak2_re180/run';
-%c=0;
-baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
-c=8;
+baseDir = '/scratch.global/kuma0458/c0ak2_re180/run';
+c=0;
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+%c=8;
 
 Nx=256;
 Ny=192;
@@ -27,13 +27,15 @@ kx=pex*[0:Nx/2-1,-Nx/2:-1]';
 load(fullfile(baseDir,'flowrate.mat'))
 load(fullfile(baseDir,'grid.mat'))
 load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi','J')
-	Jacobian=1./dZetadz;
-	vol = trapz(X(:,1,1),Jacobian);
+Jacobian=1./dZetadz;
 uphi=uphi./J;
 wphi = wphi./J;
 
 dx=X(4,4,4)-X(3,3,3);
 dy=Y(4,4,4)-Y(3,3,3);
+
+vol = dx*sum(Jacobian);
+
 
 % fup=fft(uphi,[],1);
 % fwp=fft(wphi,[],1);
@@ -47,104 +49,109 @@ Tconvs=Ts;
 Tstrs=Ts;
 check=Jdot.*0;
 
-% tstart=3825000000;
-% step =    5000000;
-% tend =4620000000;
+tstart=5950000000;
+ step =   5000000;
+ tend =7820000000;
 
-tstart=4300000000; 
-step =    1250000;
-tend = 4770000000;
+%tstart=4300000000;
+%step =    1250000;
+%tend = 4770000000;
+
 for tstep=tstart:step:tend
-	fn=sprintf('Sol%014d.h5',tstep);
-	fname = fullfile(baseDir,fn);
-	fnmat=sprintf('gradflux%014d.mat',tstep);
-	load(fullfile(baseDir,fnmat));
-	%fngn = sprintf('grid%014d.mat',tstep);
-	%load(fullfile(baseDir,fngn));
-	
+    fn=sprintf('Sol%014d.h5',tstep);
+    fname = fullfile(baseDir,fn);
+    fnmat=sprintf('gradflux%014d.mat',tstep);
+    load(fullfile(baseDir,fnmat));
+    %fngn = sprintf('grid%014d.mat',tstep);
+    %load(fullfile(baseDir,fngn));
 
-	 fnja = sprintf('jafields%014d.mat',tstep)
-	 fnja = fullfile(baseDir,fnja);
+    fnja = sprintf('jafields%014d.mat',tstep)
+    fnja = fullfile(baseDir,fnja);
 
-	fprintf('Reading %s\n', fname);
-	u    = h5read(fname, '/u');
-	v    = h5read(fname, '/v');
-	time = h5read(fname, '/time')
-	ct=c*time;
-	
-	% kd = exp((-1i*ct).*kx);
+    fprintf('Reading %s\n', fname);
+    u    = h5read(fname, '/u');
+    v    = h5read(fname, '/v');
+    time = h5read(fname, '/time')
+    ct=c*time;
+
+    % kd = exp((-1i*ct).*kx);
     kd = exp((1i*ct).*kx);
-	kdis = reshape(kd,[Nx,1,1]);
+    kdis = reshape(kd,[Nx,1,1]);
 
-    u = ifft( (fft(u,[],1).*kdis),[],1,'symmetric');
-	v = ifft( (fft(v,[],1).*kdis),[],1,'symmetric');
-	wc= ifft( (fft(wc,[],1).*kdis),[],1,'symmetric');	
-	ox = dwdy-dvdz;
-	oy = dudz-dwdx;
-	oz = dvdx-dudy;
+    u = ifft( ( fft(u,[],1).*kdis),[],1,'symmetric');
+    v = ifft( ( fft(v,[],1).*kdis),[],1,'symmetric');
+    wc= ifft( (fft(wc,[],1).*kdis),[],1,'symmetric');
+    ox = dwdy-dvdz;
+    oy = dudz-dwdx;
+    oz = dvdx-dudy;
     clear dwdy dvdz dudz dwdx dvdx dudy
-	ox= ifft( (fft(ox,[],1).*kdis),[],1,'symmetric');
-	oy= ifft( (fft(oy,[],1).*kdis),[],1,'symmetric');
-	oz= ifft( (fft(oz,[],1).*kdis),[],1,'symmetric');
-    
-	voz = single(v.*oz);
-	woy = single(wc.*oy);
-	uoy = single((u-c).*oy);
-	vox = single(v.*ox);
-	clear u v wc ox oy oz
+    ox= ifft( (fft(ox,[],1).*kdis),[],1,'symmetric');
+    oy= ifft( (fft(oy,[],1).*kdis),[],1,'symmetric');
+    oz= ifft( (fft(oz,[],1).*kdis),[],1,'symmetric');
+
+    voz = single(v.*oz);
+    woy = single(wc.*oy);
+    uoy = single((u-c).*oy);
+    vox = single(v.*ox);
+    clear u v wc ox oy oz
     viscu= ifft( (fft(viscu,[],1).*kdis),[],1,'symmetric');
     viscw= ifft( (fft(viscw,[],1).*kdis),[],1,'symmetric');
 
-	JAnl = uphi.*(voz-woy)+wphi.*(uoy-vox);
-	JAconv=uphi.*(   -woy)+wphi.*(uoy    );
+    JAnl = uphi.*(voz-woy)+wphi.*(uoy-vox);
+    JAconv=uphi.*(   -woy)+wphi.*(uoy    );
     JAstr =uphi.*(voz    )+wphi.*(   -vox);
 
     JAvisc = uphi.*viscu + wphi.*viscw;
 
 
-	clear u v w ox oy oz viscu viscw dwdy dvdz dudz dwdx dvdx dudy
-	
-	%%
-	JAnl(isnan(JAnl))=0;
-	JAvisc(isnan(JAvisc))=0;
+    clear u v w ox oy oz viscu viscw dwdy dvdz dudz dwdx dvdx dudy
+
+    %%
+    JAnl(isnan(JAnl))=0;
+    JAvisc(isnan(JAvisc))=0;
     JAconv(isnan(JAconv))=0;
     JAstr(isnan(JAstr))=0;
-	JAtot = JAnl+JAvisc;
+    JAtot = JAnl+JAvisc;
 
-	save(fnja,'JAnl','JAvisc','JAconv','JAstr');
-	
+    save(fnja,'JAnl','JAvisc','JAconv','JAstr');
+
     JAin=JAtot;
-	JAin(isnan(JAin))=0;
-	JAin=squeeze(dy*trapz(JAin,2))./Ly;
-	JAin=trapz(zz,JAin,2);
-	
-	JAnlin = squeeze(dy*trapz(JAnl,2))./Ly;
-	JAviscin=squeeze(dy*trapz(JAvisc,2))./Ly;
-	JAnlin=trapz(zz,JAnlin,2);
-	JAviscin=trapz(zz,JAviscin,2);
-	
-    JAconv = squeeze(dy*trapz(JAconv,2))./Ly;
-	JAconv = trapz(zz,JAconv,2);
-	
-    JAstr = squeeze(dy*trapz(JAstr,2))./Ly;
-	JAstr = trapz(zz,JAstr,2);
+    JAin(isnan(JAin))=0;
+    JAin=squeeze(dy*sum(JAin,2))./Ly;
+    JAin=trapz(zz,JAin,2);
 
+    JAnlin = squeeze(dy*sum(JAnl,2))./Ly;
+    JAviscin=squeeze(dy*sum(JAvisc,2))./Ly;
+    JAnlin=trapz(zz,JAnlin,2);
+    JAviscin=trapz(zz,JAviscin,2);
 
-	T = -trapz(X(:,1,1),Jacobian.*JAin)/J;
-	Tnl = -trapz(X(:,1,1),Jacobian.*JAnlin)/J;
-	Tvisc = -trapz(X(:,1,1),Jacobian.*JAviscin)/J;
-	Tconv= -trapz(X(:,1,1),Jacobian.*JAconv)/J;
-    Tstr = -trapz(X(:,1,1),Jacobian.*JAstr)/J;
+    JAconv = squeeze(dy*sum(JAconv,2))./Ly;
+    JAconv = trapz(zz,JAconv,2);
 
-	it = find(t ==time)
-	phidot = (Jdot(it))*Lx/J;
-	Ts(it)=T;
-	  Tnls(it)=Tnl;
-	Tviscs(it)=Tvisc;
+    JAstr = squeeze(dy*sum(JAstr,2))./Ly;
+    JAstr = trapz(zz,JAstr,2);
+
+    % T = -trapz(X(:,1,1),Jacobian.*JAin)/J;
+    % Tnl = -trapz(X(:,1,1),Jacobian.*JAnlin)/J;
+    % Tvisc = -trapz(X(:,1,1),Jacobian.*JAviscin)/J;
+    % Tconv= -trapz(X(:,1,1),Jacobian.*JAconv)/J;
+    % Tstr = -trapz(X(:,1,1),Jacobian.*JAstr)/J;
+
+    T    = -dx*sum(Jacobian.*JAin    )/J;
+    Tnl  = -dx*sum(Jacobian.*JAnlin  )/J;
+    Tvisc= -dx*sum(Jacobian.*JAviscin)/J;
+    Tconv= -dx*sum(Jacobian.*JAconv  )/J;
+    Tstr = -dx*sum(Jacobian.*JAstr   )/J;
+
+    it = find(t ==time)
+    phidot = (Jdot(it))*Lx/J;
+    Ts(it)=T;
+    Tnls(it)=Tnl;
+    Tviscs(it)=Tvisc;
     Tconvs(it)=Tconv;
-     Tstrs(it)=Tstr;
-	phidots(it)=phidot;
-	check(it)=100*(1-(T+phidot)/vol);
+    Tstrs(it)=Tstr;
+    phidots(it)=phidot;
+    check(it)=100*(1-(T+phidot)/vol);
 end
 %%
 mja=fullfile(baseDir,'JAseries_statwave.mat')

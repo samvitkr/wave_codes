@@ -1,13 +1,15 @@
 close all
 clear 
-% baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+ baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+ ak=0.2;
+
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.2;
 wave_n=12;
 
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
 load(fullfile(baseDir, 'grid.mat'));
 
 fnp  = fullfile(baseDir, 'phi_interp_2d.mat'); % Saving as a 2D specific file
@@ -42,9 +44,14 @@ delta = cumtrapz(zin,upin);
 %%
  
  
- istart=5;
-istep=5;
-iend=125;
+ istart=2;
+istep=1;
+iend=Nz-1;
+
+%  istart=5;
+% istep=5;
+% iend=125;
+
 startX = X_slice(istart:istep:iend,1);
 startZ = Z_slice(istart:istep:iend,1);
 startXb = X_slice(istart:istep:iend,end);
@@ -179,14 +186,14 @@ xq=x_uniform_phi;
 
 mslines=fullfile(baseDir,'slines.mat');
 %save(mslines,'sl','slq','asl','msl','k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','x_uniform_phi','delta','delta_sl');
-save(mslines,'k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','x_uniform_phi','delta','delta_sl');...'-append')
+save(mslines,'k0','x_1D','a0','xi_vec','psi_vec','zeta_vec','xq','x_uniform_phi','delta','delta_sl','slq');...'-append')
 
 
-% %%
-% hold on
-% %plot(X_slice(istart:istep:iend,:)',slnum,':b')
-% %plot(X_slice(istart:istep:iend,:)',sl,'-sk')
-% %plot(x_1D,z0,'-k','LineWidth',1.5)
-% plot(x_uniform_phi,slq,'-ok')
-% hold off
+%%
+hold on
+%plot(X_slice(istart:istep:iend,:)',slnum,':b')
+%plot(X_slice(istart:istep:iend,:)',sl,'-sk')
+%plot(x_1D,z0,'-k','LineWidth',1.5)
+plot(x_uniform_phi,slq,'-k')
+hold off
 

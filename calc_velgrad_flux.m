@@ -3,13 +3,13 @@ close all
 %baseDir = '/users/1/kuma0458/wave/wavy_wall';
 %baseDir = '/users/1/kuma0458/wave/wavy_ret180';
 %baseDir = '/users/1/kuma0458/wave/wave_c_2';
-%baseDir = '/scratch.global/kuma0458/c0ak2_re180/run'
-baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+baseDir = '/scratch.global/kuma0458/c0ak2_re180/run'
+%baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 %baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
+ak=0.2;
 Nx=256;
 Ny=192;
 Nz=128;
-ak=0.1;
 wave_n=12;
 fn    = 'grid.h5';
 fname = fullfile(baseDir,fn);
@@ -32,9 +32,9 @@ tic
 ret=180;
 nu=1/ret;
 
-%tstart=3020400000;
-%step  =    400000;
-%tend  =3084000000;
+tstart=4880000000;
+step  =   5000000;
+tend  =7820000000;
 
 %tstart=3020200000;
 %step  =    200000;
@@ -44,9 +44,9 @@ nu=1/ret;
 %step  =    400000;
 %tend  =3578000000;
 
-tstart=4300000000;
-step =    1250000;
-tend = 4770000000;
+%tstart=4300000000;
+%step =    1250000;
+%tend = 4770000000;
 
 %tstart=3825000000;
 %step =    5000000;

@@ -1,7 +1,7 @@
 clear
-% close all
+close all
 baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
-fign =                     "JAcheck_c8ak1_re180_static.fig";
+fign =                     "JAcheck_c8ak1_re180_statwave.fig";
 
 %baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 load(fullfile(baseDir,'JAseries_statwave.mat'))
@@ -13,9 +13,9 @@ Nz=128;
 % step  =    400000;
 % tend  =3578000000;
 
-% tstart=3025000000;
+% tstart=3825000000;
 % step  =   5000000;
-% % tend  =4020000000;
+% tend  =4620000000;
 % 
 tstart=4300000000;
 step =    1250000;
@@ -39,12 +39,16 @@ load(fullfile(baseDir,'grid.mat'))
 load(fullfile(baseDir,'phi_interp_2d.mat'),'uphi','wphi')
 	Jacobian=1./dZetadz;
 	vol = Lx;
-
+dx = X(4,4,4)-X(3,3,3);
 f=figure
 subplot(1,2,1)
 hold on
-plot(t,phidots,'-r')
-plot(t,Ts,'-.b')
+plot(t,phidots,'-or')
+plot(t,Ts,'-b')
+% plot(t,Tnls,'--b')
+% plot(t,Tconvs,'-.m')
+% plot(t,Tstrs,'--m')
+% plot(t,Tviscs,':b')
 plot(t,phidots+Ts,'-k')
 hold off
 yline(vol)
@@ -53,13 +57,12 @@ xlabel('time')
 legend boxoff
 subplot(1,2,2)
 hold on
-
 plot(t,check)
 hold off
 xlabel('time')
 ylabel('%error')
 
-saveas(f,fign);
+% saveas(f,fign);
 
 
 %%
@@ -68,7 +71,7 @@ saveas(f,fign);
 
     uphi=squeeze(uphi);
     uphiin=trapz(zz,uphi,2);
-    Jstar=trapz(X(:,1,1),Jacobian.*uphiin);
+    Jstar=dx*sum(Jacobian.*uphiin);
     Jstar = Jstar./vol;
 
     figure
@@ -77,4 +80,4 @@ plot(check./Jstar)
 load(fullfile(baseDir,'flowrate.mat'))
 figure
 %
-plot(flowrate./(2*pi),'o-')
+plot(flowrate,'o-')

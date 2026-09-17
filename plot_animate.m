@@ -8,11 +8,11 @@ close all
 % baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
 % c=2;
 
-baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
-c=14;
+%baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
+%c=14;
 
-% baseDir = '/scratch.global/kuma0458/c24ak2_re180/run';
-% c=24;
+ baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
+ c=8;
 
 Nx=256;
 Ny=192;
@@ -30,13 +30,14 @@ height=541;
 % step  =   5000000;
 % tend  =3820000000;
 
-tstart=3240000000;
-step  =    400000;
-tend  =3248000000;
+%tstart=3240000000;
+%step  =    400000;
+%tend  =3248000000;
 
-% tstart=3020200000;
-% step  =    200000;
-% tend  =3052000000;
+
+tstart= 4300000000;
+  step=    1250000;
+ tend = 4770000000;
 ret=180;
 %%
 fvn=fullfile(baseDir,'vel_field.avi');
@@ -130,7 +131,8 @@ for tstep=tstart:step:tend
 % fn=sprintf('DAT000%03d99999999',tstep)
 fn=sprintf('Sol%014d.h5',tstep)
 fname   = fullfile(baseDir,fn);   % <-- edit if naming differs
-% info=h5info(fname)
+
+
 %fnmat = sprintf('grid%014d.mat',tstep);
 %
 
@@ -145,7 +147,7 @@ sgt=sprintf("t=%0.4f",time);
 
 t=tiledlayout(3,1);
 nexttile
-pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-JAnl(:,1,:)));
+pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-mean(JAnl(:,:,:),2)));
 shading flat
 axis equal
 xlim([0 2*pi])
@@ -157,7 +159,7 @@ ylabel(cu,'$-u_{\phi}\cdot(u\times\omega)$','Interpreter','latex','FontSize',12)
 clim([-cnl cnl])
 
 nexttile
-pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-JAvisc(:,1,:)));
+pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-mean(JAvisc(:,:,:),2)));
 shading flat
 axis equal
 xlim([0 2*pi])
@@ -170,7 +172,7 @@ ylabel(cw,'$-u_{\phi}\cdot(\nu \Delta u)$','Interpreter','latex','FontSize',12)
 
 JA=JAvisc+JAnl;
 nexttile
-pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-JA(:,1,:)));
+pcolor(squeeze(X(:,1,:)),squeeze(Z(:,1,:)),squeeze(-mean(JA(:,:,:),2 )));
 shading flat
 axis equal
 xlim([0 2*pi])

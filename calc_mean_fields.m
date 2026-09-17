@@ -1,7 +1,7 @@
 clear
 close all
 
-baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
+baseDir = '/scratch.global/kuma0458/c-2ak2_re180/run';
 Nx=256;
 Ny=192;
 Nz=128;
@@ -20,13 +20,9 @@ pex=0.5;
 kx=pex*[0:Nx/2-1,-Nx/2:-1]';
 %kdis = exp(-(1i*ct).*kx);
 
-%baseDir = '/users/1/kuma0458/wave/wavy_wall';
-%baseDir = '/users/1/kuma0458/wave/wavy_ret180';
-%baseDir = '/users/1/kuma0458/wave/wave_c_2';
-%baseDir = '/users/1/kuma0458/wave/wave_ret180_c2';
-tstart=3025000000;
+tstart=3825000000;
 step  =   5000000;
-tend  =3820000000;
+tend  =4620000000;
 counter=0;
 for tstep=tstart:step:tend
 	time = tstep/(1e+8)

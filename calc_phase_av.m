@@ -44,17 +44,17 @@ nlpav=zeros(Nx,Ny,Nz);
 convpav=zeros(Nx,Ny,Nz);
 strpav=zeros(Nx,Ny,Nz);
 
-convposav=zeros(Nx,Nz);
- strposav=zeros(Nx,Nz);
-
-convnegav=zeros(Nx,Nz);
- strnegav=zeros(Nx,Nz);
+% convposav=zeros(Nx,Nz);
+%  strposav=zeros(Nx,Nz);
+% 
+% convnegav=zeros(Nx,Nz);
+%  strnegav=zeros(Nx,Nz);
 
 
 mf=fullfile(baseDir,'mean_fields.mat');
  load(mf)
-mp=fullfile(baseDir,'partial_sum.mat');
- load(mp)
+% mp=fullfile(baseDir,'partial_sum.mat');
+%  load(mp)
 
 for id = 0:nw-1%wave_n-1
 	xdis  = id*lp;%id*L0;
@@ -69,11 +69,11 @@ for id = 0:nw-1%wave_n-1
 	viscpav = viscpav + ifft((fft(viscav,[],1).*kdis),[],1,'symmetric');
 	  nlpav =   nlpav + ifft((fft(  nlav,[],1).*kdis),[],1,'symmetric');
 	  
-	  convposav = convposav + ifft((fft(convp,[],1).*kdis),[],1,'symmetric');
-           strposav =  strposav + ifft((fft( strp,[],1).*kdis),[],1,'symmetric');
-
-	  convnegav = convnegav + ifft((fft(convn,[],1).*kdis),[],1,'symmetric');
-           strnegav =  strnegav + ifft((fft( strn,[],1).*kdis),[],1,'symmetric');
+	  % convposav = convposav + ifft((fft(convp,[],1).*kdis),[],1,'symmetric');
+      %      strposav =  strposav + ifft((fft( strp,[],1).*kdis),[],1,'symmetric');
+      % 
+	  % convnegav = convnegav + ifft((fft(convn,[],1).*kdis),[],1,'symmetric');
+      %      strnegav =  strnegav + ifft((fft( strn,[],1).*kdis),[],1,'symmetric');
 
 	  convpav = convpav + ifft((fft(convav,[],1).*kdis),[],1,'symmetric');
           strpav  =  strpav + ifft((fft( strav,[],1).*kdis),[],1,'symmetric');
@@ -92,11 +92,11 @@ nlpav =  squeeze(mean(  nlpav(1:ip,:,:),2))./nw;
 convpav =squeeze(mean(convpav(1:ip,:,:),2))./nw;
 strpav = squeeze(mean( strpav(1:ip,:,:),2))./nw;
 
-convposav =squeeze((convposav(1:ip,:,:)))./nw;
- strposav =squeeze(( strposav(1:ip,:,:)))./nw;
-
-convnegav =squeeze((convnegav(1:ip,:,:)))./nw;
- strnegav =squeeze(( strnegav(1:ip,:,:)))./nw; 
+% convposav =squeeze((convposav(1:ip,:,:)))./nw;
+%  strposav =squeeze(( strposav(1:ip,:,:)))./nw;
+% 
+% convnegav =squeeze((convnegav(1:ip,:,:)))./nw;
+%  strnegav =squeeze(( strnegav(1:ip,:,:)))./nw; 
 
 
 %%
@@ -118,10 +118,10 @@ viscph=viscpav(idp,:);
 nlph  =  nlpav(idp,:);
 convph=convpav(idp,:);
 strph = strpav(idp,:);
-convposph=convposav(idp,:);
- strposph= strposav(idp,:);
-convnegph=convnegav(idp,:);
- strnegph= strnegav(idp,:);
+% convposph=convposav(idp,:);
+%  strposph= strposav(idp,:);
+% convnegph=convnegav(idp,:);
+%  strnegph= strnegav(idp,:);
 
 
 %%
@@ -141,7 +141,7 @@ colorbar
 
 
 load(fullfile(baseDir,'slines.mat'))
-Zslph  =Zsl(idp,:);
+Zslph  =slq(idp,:);
 
 load(fullfile(baseDir,'potexact.mat'))
 phiph=interpolateSolution(phiexact,double(Xph),double(Zph));

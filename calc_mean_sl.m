@@ -35,7 +35,8 @@ zeta_clean= double(squeeze(ZETA_2D(1,:)));
  [XI_2D, ZETA_2D] = ndgrid(xi_clean, zeta_clean);
 
 Fu_2D=griddedInterpolant(XI_2D,ZETA_2D,zeros(size(XI_2D)),'makima','nearest');
-ZQ = Zsl;
+ZQ = slq;
+Zsl=slq'
 [~,numl]=size(Zsl)
 % numl=length(msl);
 % ZQ = double(sl);

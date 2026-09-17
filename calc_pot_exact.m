@@ -5,7 +5,7 @@ close all
 %baseDir = '/users/1/kuma0458/wave/c2ak2_re180/run';
 %baseDir = '/scratch.global/kuma0458/c2ak2_re180/run';
 %baseDir = '/scratch.global/kuma0458/c14ak1_re180/run';
-baseDir = '/scratch.global/kuma0458/c2ak1_re180/run';
+baseDir = '/scratch.global/kuma0458/c8ak1_re180/run';
 
 % ==========================================
 % 1. SETUP & GEOMETRY
@@ -18,8 +18,8 @@ k0=wave_n*pex;
 a=ak/k0;
 %%
 H = 1;
-Nx = 256*6;   % Adjusted nodes in X to maintain resolution over 3*Lx span
-Ny = 256*2;     % Nodes in Y
+Nx = 256*12;   % Adjusted nodes in X to maintain resolution over 3*Lx span
+Ny = 256*25;     % Nodes in Y
 % Nx=256;
 % Ny=128;
 % Create a standard PDE Model
